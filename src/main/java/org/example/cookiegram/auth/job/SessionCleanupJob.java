@@ -1,4 +1,4 @@
-package org.example.cookiegram.auth;
+package org.example.cookiegram.auth.job;
 
 import org.example.cookiegram.auth.repository.SessionTokenRepository;
 import org.springframework.scheduling.annotation.Scheduled;

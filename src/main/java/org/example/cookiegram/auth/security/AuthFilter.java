@@ -24,10 +24,16 @@ public class AuthFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return path.startsWith("/api/auth/register")
-                || path.startsWith("/api/auth/login")
-                || path.startsWith("/h2")
-                || path.startsWith("/error");
+
+        // 1) Allow everything that is NOT under /api
+        // This includes: /, /index.html, /css/**, /js/**, etc.
+        if (!path.startsWith("/api/")) {
+            return true;
+        }
+
+        // 2) Public API endpoints
+        return path.equals("/api/auth/register")
+                || path.equals("/api/auth/login");
     }
 
     @Override
