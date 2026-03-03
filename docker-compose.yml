@@ -1,0 +1,12 @@
+services:
+  cookiegram-auth:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - cookiegram_data:/app/data
+    environment:
+      - SERVER_PORT=8080
+
+volumes:
+  cookiegram_data:

@@ -34,6 +34,16 @@ public class AuthController {
         return ResponseEntity.ok(new UserResponse(user.getId(), user.getUsername(), user.getEmail()));
     }
 
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ForgotPasswordResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest req) {
+        return ResponseEntity.ok(auth.forgotPassword(req));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<MessageResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest req) {
+        return ResponseEntity.ok(auth.resetPassword(req));
+    }
+
     // Protected now
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestHeader("X-Auth-Token") String token) {
