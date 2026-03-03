@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"/><title>Reset Password</title></head>
+<body style="font-family:Arial;max-width:700px;margin:30px auto;padding:0 16px">
+<h2>Reset Password</h2>
+<p><a href="/">Home</a> | <a href="/forgot.html">Forgot</a></p>
+
+<label>Token</label><br/>
+<input id="token" style="width:97%;padding:10px;margin:8px 0" placeholder="paste token"/><br/>
+
+<label>New Password</label><br/>
+<input id="pw" type="password" style="width:97%;padding:10px;margin:8px 0" placeholder="new password"/><br/>
+
+<button onclick="reset()" style="padding:10px 14px">Reset Password</button>
+
+<pre id="out" style="background:#f6f6f6;padding:12px;border-radius:10px;margin-top:16px">(no request yet)</pre>
+
+<script>
+    const baseUrl = "http://localhost:8080";
+    function setOut(x){ document.getElementById("out").textContent = JSON.stringify(x,null,2); }
+
+    // Autofill token from URL ?token=
+    const params = new URLSearchParams(window.location.search);
+    const t = params.get("token");
+    if (t) document.getElementById("token").value = t;
+
+    async function reset(){
+      try{
+        const res = await fetch(baseUrl + "/api/auth/reset-password", {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify({
+            token: document.getElementById("token").value,
+            newPassword: document.getElementById("pw").value
+          })
+        });
+        const data = await res.json();
+        setOut(data);
+      } catch(e){
+        setOut({error:String(e)});
+      }
+    }
+</script>
+</body>
+</html>

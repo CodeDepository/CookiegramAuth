@@ -1,6 +1,8 @@
 package org.example.cookiegram.auth.service;
 
 import org.example.cookiegram.auth.dto.*;
+import org.example.cookiegram.auth.entity.PasswordResetToken;
+import org.example.cookiegram.auth.repository.PasswordResetTokenRepository;
 import org.example.cookiegram.auth.repository.SessionTokenRepository;
 import org.example.cookiegram.auth.repository.UserRepository;
 import org.example.cookiegram.auth.entity.SessionToken;
@@ -9,6 +11,7 @@ import org.example.cookiegram.auth.exception.UnauthorizedException;
 import org.example.cookiegram.auth.security.AuthenticatedUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.time.Duration;
 import java.time.Instant;
@@ -22,11 +25,20 @@ public class AuthService {
     private final UserRepository users;
     private final SessionTokenRepository sessions;
     private final PasswordService passwords;
+    private static final Duration RESET_TTL = Duration.ofMinutes(15);
+    private final PasswordResetTokenRepository resetTokens;
 
-    public AuthService(UserRepository users, SessionTokenRepository sessions, PasswordService passwords) {
+
+    public AuthService(
+            UserRepository users,
+            SessionTokenRepository sessions,
+            PasswordService passwords,
+            PasswordResetTokenRepository resetTokens
+    ) {
         this.users = users;
         this.sessions = sessions;
         this.passwords = passwords;
+        this.resetTokens = resetTokens;
     }
 
     @Transactional
@@ -79,6 +91,52 @@ public class AuthService {
         // IMPORTANT: read needed fields while still inside the transaction
         User u = session.getUser();
         return new AuthenticatedUser(u.getId(), u.getUsername(), u.getEmail());
+    }
+
+
+    @Transactional
+    public ForgotPasswordResponse forgotPassword(ForgotPasswordRequest req) {
+        String email = req.email.trim().toLowerCase();
+
+        // Security best practice: don't reveal if email exists.
+        // But in DEV, we’ll return token only if user exists.
+        var userOpt = users.findByEmailIgnoreCase(email);
+        if (userOpt.isEmpty()) {
+            return new ForgotPasswordResponse("If that email exists, a reset link was generated.", null);
+        }
+
+        User user = userOpt.get();
+
+        String token = UUID.randomUUID().toString().replace("-", "") + UUID.randomUUID().toString().replace("-", "");
+        Instant expiresAt = Instant.now().plus(RESET_TTL);
+
+        resetTokens.save(new PasswordResetToken(token, user, expiresAt));
+
+        return new ForgotPasswordResponse("Reset token generated (DEV). Use it on /reset.html", token);
+    }
+
+    @Transactional
+    public MessageResponse resetPassword(ResetPasswordRequest req) {
+        String token = req.token.trim();
+
+        PasswordResetToken prt = resetTokens.findByToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid reset token"));
+
+        if (prt.isUsed()) {
+            throw new IllegalArgumentException("Reset token already used");
+        }
+        if (prt.isExpired()) {
+            throw new IllegalArgumentException("Reset token expired");
+        }
+
+        User user = prt.getUser();
+        user.setPassword(passwords.store(req.newPassword)); // still plain for now, can upgrade later
+        users.save(user);
+
+        prt.markUsed();
+        resetTokens.save(prt);
+
+        return new MessageResponse("Password updated");
     }
 
     @Transactional

@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Cookiegram Auth Test UI</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 30px auto; padding: 0 16px; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px; }
+        input { width: 90%; padding: 10px; margin: 6px 0 12px; }
+        button { padding: 10px 20px; margin: 5px 0 2px; cursor: pointer; }
+        pre { background: #f6f6f6; padding: 12px; border-radius: 10px; overflow: auto; }
+        .muted { color: #666; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+<h2>Cookiegram Auth – Test UI</h2>
+<p class="muted">This page calls your backend on <code>http://localhost:8080</code>. Token is stored in <code>localStorage</code>.</p>
+
+<div class="row">
+    <div class="card">
+        <h3>Register</h3>
+        <label>Username</label>
+        <input id="regUsername" placeholder="harry" />
+        <label>Email</label>
+        <input id="regEmail" placeholder="h@x.com" />
+        <label>Password</label>
+        <input id="regPassword" type="password" placeholder="1234" />
+        <button onclick="register()">Register</button>
+    </div>
+
+    <div class="card">
+        <h3>Login</h3>
+        <label>Username or Email</label>
+        <input id="loginKey" placeholder="harry or h@x.com" />
+        <label>Password</label>
+        <input id="loginPassword" type="password" placeholder="1234" />
+        <button onclick="login()">Login</button>
+        <p class="muted">Current token: <code id="tokenView">(none)</code></p>
+    </div>
+</div>
+
+<div class="row" style="margin-top:16px;">
+    <div class="card">
+        <h3>Me (Protected)</h3>
+        <button onclick="me()">GET /api/auth/me</button>
+        <button onclick="logout()">POST /api/auth/logout</button>
+        <button onclick="clearToken()">Clear Token (UI only)</button>
+    </div>
+
+    <div class="card">
+        <h3>Response</h3>
+        <pre id="out">(no requests yet)</pre>
+    </div>
+</div>
+
+<script>
+    const baseUrl = "http://localhost:8080";
+
+    function setOut(obj) {
+      document.getElementById("out").textContent =
+        typeof obj === "string" ? obj : JSON.stringify(obj, null, 2);
+    }
+
+    function getToken() {
+      return localStorage.getItem("cookiegram_token");
+    }
+
+    function setToken(token) {
+      if (token) localStorage.setItem("cookiegram_token", token);
+      else localStorage.removeItem("cookiegram_token");
+      document.getElementById("tokenView").textContent = token || "(none)";
+    }
+
+    async function api(path, { method = "GET", body = null, auth = false } = {}) {
+      const headers = { "Content-Type": "application/json" };
+      if (auth) {
+        const t = getToken();
+        if (t) headers["X-Auth-Token"] = t;
+      }
+
+      const res = await fetch(baseUrl + path, {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : null
+      });
+
+      let data;
+      const text = await res.text();
+      try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+
+      if (!res.ok) {
+        throw { status: res.status, data };
+      }
+      return data;
+    }
+
+    async function register() {
+      try {
+        const body = {
+          username: document.getElementById("regUsername").value,
+          email: document.getElementById("regEmail").value,
+          password: document.getElementById("regPassword").value
+        };
+        const data = await api("/api/auth/register", { method: "POST", body });
+        setOut({ ok: true, data });
+      } catch (e) {
+        setOut({ ok: false, error: e });
+      }
+    }
+
+    async function login() {
+      try {
+        const body = {
+          usernameOrEmail: document.getElementById("loginKey").value,
+          password: document.getElementById("loginPassword").value
+        };
+        const data = await api("/api/auth/login", { method: "POST", body });
+        setToken(data.token);
+        setOut({ ok: true, data });
+      } catch (e) {
+        setOut({ ok: false, error: e });
+      }
+    }
+
+    async function me() {
+      try {
+        const data = await api("/api/auth/me", { method: "GET", auth: true });
+        setOut({ ok: true, data });
+      } catch (e) {
+        setOut({ ok: false, error: e });
+      }
+    }
+
+    async function logout() {
+      try {
+        const data = await api("/api/auth/logout", { method: "POST", auth: true });
+        setToken(null);
+        setOut({ ok: true, data });
+      } catch (e) {
+        setOut({ ok: false, error: e });
+      }
+    }
+
+    function clearToken() {
+      setToken(null);
+      setOut({ ok: true, message: "Token cleared in UI (server session may still exist if not logged out)" });
+    }
+
+    // init token view
+    setToken(getToken());
+</script>
+</body>
+</html>
