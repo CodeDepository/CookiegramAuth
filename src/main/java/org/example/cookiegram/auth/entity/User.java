@@ -1,4 +1,4 @@
-package org.example.cookiegram.auth;
+package org.example.cookiegram.auth.entity;
 
 import jakarta.persistence.*;
 import java.time.Instant;

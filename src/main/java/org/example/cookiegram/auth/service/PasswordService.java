@@ -1,4 +1,4 @@
-package org.example.cookiegram.auth;
+package org.example.cookiegram.auth.service;
 
 
 import org.springframework.stereotype.Service;

@@ -1,5 +1,6 @@
-package org.example.cookiegram.auth;
+package org.example.cookiegram.auth.repository;
 
+import org.example.cookiegram.auth.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 

@@ -1,4 +1,8 @@
-package org.example.cookiegram.auth;
+package org.example.cookiegram.auth.controller;
+
+import org.example.cookiegram.auth.security.AuthFilter;
+import org.example.cookiegram.auth.service.AuthService;
+import org.example.cookiegram.auth.security.AuthenticatedUser;
 import org.example.cookiegram.auth.dto.*;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -24,11 +28,16 @@ public class AuthController {
         return ResponseEntity.ok(auth.login(req));
     }
 
+    // Protected now (filter enforces auth)
     @GetMapping("/me")
-    public ResponseEntity<UserResponse> me(@RequestHeader(name="X-Auth-Token", required=false) String token) {
-        if (token == null || token.isBlank()) {
-            throw new IllegalArgumentException("Not authenticated");
-        }
-        return ResponseEntity.ok(auth.me(token.trim()));
+    public ResponseEntity<UserResponse> me(@RequestAttribute(AuthFilter.ATTR_USER) AuthenticatedUser user) {
+        return ResponseEntity.ok(new UserResponse(user.getId(), user.getUsername(), user.getEmail()));
+    }
+
+    // Protected now
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader("X-Auth-Token") String token) {
+        auth.logout(token.trim());
+        return ResponseEntity.ok().body(java.util.Map.of("message", "Logged out"));
     }
 }

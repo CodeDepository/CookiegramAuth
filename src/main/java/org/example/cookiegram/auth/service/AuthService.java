@@ -1,13 +1,23 @@
-package org.example.cookiegram.auth;
+package org.example.cookiegram.auth.service;
 
 import org.example.cookiegram.auth.dto.*;
+import org.example.cookiegram.auth.repository.SessionTokenRepository;
+import org.example.cookiegram.auth.repository.UserRepository;
+import org.example.cookiegram.auth.entity.SessionToken;
+import org.example.cookiegram.auth.entity.User;
+import org.example.cookiegram.auth.exception.UnauthorizedException;
+import org.example.cookiegram.auth.security.AuthenticatedUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
 
 @Service
 public class AuthService {
+
+    private static final Duration SESSION_TTL = Duration.ofHours(24);
 
     private final UserRepository users;
     private final SessionTokenRepository sessions;
@@ -50,17 +60,29 @@ public class AuthService {
         }
 
         String token = UUID.randomUUID().toString().replace("-", "");
-        sessions.save(new SessionToken(token, user));
+        Instant expiresAt = Instant.now().plus(SESSION_TTL);
+
+        sessions.save(new SessionToken(token, user, expiresAt));
 
         return new LoginResponse(token, new UserResponse(user.getId(), user.getUsername(), user.getEmail()));
     }
 
     @Transactional(readOnly = true)
-    public UserResponse me(String token) {
+    public AuthenticatedUser requireUserByToken(String token) {
         SessionToken session = sessions.findByToken(token)
-                .orElseThrow(() -> new IllegalArgumentException("Not authenticated"));
+                .orElseThrow(() -> new UnauthorizedException("Not authenticated"));
 
-        User user = session.getUser();
-        return new UserResponse(user.getId(), user.getUsername(), user.getEmail());
+        if (session.isExpired()) {
+            throw new UnauthorizedException("Session expired");
+        }
+
+        // IMPORTANT: read needed fields while still inside the transaction
+        User u = session.getUser();
+        return new AuthenticatedUser(u.getId(), u.getUsername(), u.getEmail());
+    }
+
+    @Transactional
+    public void logout(String token) {
+        sessions.deleteByToken(token);
     }
 }
