@@ -1,156 +1,80 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Cookiegram Auth Test UI</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 900px; margin: 30px auto; padding: 0 16px; }
-        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px; }
-        input { width: 90%; padding: 10px; margin: 6px 0 12px; }
-        button { padding: 10px 20px; margin: 5px 0 2px; cursor: pointer; }
-        pre { background: #f6f6f6; padding: 12px; border-radius: 10px; overflow: auto; }
-        .muted { color: #666; font-size: 0.9em; }
-    </style>
+    <title>Cookiegram – Custom Chocolate Chip Cookies</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link rel="stylesheet" href="/styles.css"/>
 </head>
 <body>
-<h2>Cookiegram Auth – Test UI</h2>
-<p class="muted">This page calls your backend on <code>http://localhost:8080</code>. Token is stored in <code>localStorage</code>.</p>
+<div class="page-wrapper">
 
-<div class="row">
-    <div class="card">
-        <h3>Register</h3>
-        <label>Username</label>
-        <input id="regUsername" placeholder="harry" />
-        <label>Email</label>
-        <input id="regEmail" placeholder="h@x.com" />
-        <label>Password</label>
-        <input id="regPassword" type="password" placeholder="1234" />
-        <button onclick="register()">Register</button>
+    <nav class="nav">
+        <a href="/" class="nav-brand">
+            <span class="cookie-dot"></span>cookiegram
+        </a>
+        <div class="nav-links">
+      <span id="nav-auth">
+        <a href="/login.html">sign in</a>
+        <a href="/register.html" class="nav-pill">order now</a>
+      </span>
+            <span id="nav-user" class="hidden" style="display:flex;gap:6px;align-items:center;">
+        <span id="nav-username" style="font-family:var(--font-mono);font-size:.8rem;color:var(--text-soft);"></span>
+        <a href="/account.html">account</a>
+        <button id="nav-logout">sign out</button>
+      </span>
+        </div>
+    </nav>
+
+    <!-- Logged-out home -->
+    <div id="home-guest" class="home-center">
+        <div class="home-cookie">🍪</div>
+        <h1 class="home-title fade-up">
+            cookies with a<br/><em>personal touch.</em>
+        </h1>
+        <p class="home-sub fade-up d1">
+            Warm chocolate chip cookies, baked fresh, delivered with
+            your custom message. One flavour. Endless occasions.
+        </p>
+        <div class="home-actions fade-up d2">
+            <a href="/register.html" class="btn btn-primary btn-big">place an order</a>
+            <a href="/login.html"    class="btn btn-ghost   btn-big">sign in</a>
+        </div>
     </div>
 
-    <div class="card">
-        <h3>Login</h3>
-        <label>Username or Email</label>
-        <input id="loginKey" placeholder="harry or h@x.com" />
-        <label>Password</label>
-        <input id="loginPassword" type="password" placeholder="1234" />
-        <button onclick="login()">Login</button>
-        <p class="muted">Current token: <code id="tokenView">(none)</code></p>
+    <!-- Logged-in dashboard -->
+    <div id="home-auth" class="home-center hidden">
+        <div class="dashboard-card fade-up">
+            <div class="welcome-avatar" id="dash-avatar"></div>
+            <div class="welcome-name"   id="dash-name"></div>
+            <div class="welcome-msg">you're signed in &amp; ready to order 🍪</div>
+
+            <div class="order-teaser">
+                <strong>🍫 chocolate chip cookie</strong>
+                freshly baked · custom message · delivered to your door
+            </div>
+
+            <a href="#" class="btn btn-primary" style="margin-bottom:10px;">place an order</a>
+            <a href="/account.html" class="btn btn-ghost">view account</a>
+        </div>
     </div>
+
+    <footer class="footer">© 2025 cookiegram · one cookie, infinite messages</footer>
 </div>
 
-<div class="row" style="margin-top:16px;">
-    <div class="card">
-        <h3>Me (Protected)</h3>
-        <button onclick="me()">GET /api/auth/me</button>
-        <button onclick="logout()">POST /api/auth/logout</button>
-        <button onclick="clearToken()">Clear Token (UI only)</button>
-    </div>
-
-    <div class="card">
-        <h3>Response</h3>
-        <pre id="out">(no requests yet)</pre>
-    </div>
-</div>
-
+<script src="/app.js"></script>
 <script>
-    const baseUrl = "http://localhost:8080";
-
-    function setOut(obj) {
-      document.getElementById("out").textContent =
-        typeof obj === "string" ? obj : JSON.stringify(obj, null, 2);
-    }
-
-    function getToken() {
-      return localStorage.getItem("cookiegram_token");
-    }
-
-    function setToken(token) {
-      if (token) localStorage.setItem("cookiegram_token", token);
-      else localStorage.removeItem("cookiegram_token");
-      document.getElementById("tokenView").textContent = token || "(none)";
-    }
-
-    async function api(path, { method = "GET", body = null, auth = false } = {}) {
-      const headers = { "Content-Type": "application/json" };
-      if (auth) {
-        const t = getToken();
-        if (t) headers["X-Auth-Token"] = t;
+    (async () => {
+      const user = await hydrateNav();
+      if (user) {
+        document.getElementById('home-guest').classList.add('hidden');
+        document.getElementById('home-auth').classList.remove('hidden');
+        document.getElementById('dash-avatar').textContent = user.username.charAt(0).toUpperCase();
+        document.getElementById('dash-name').textContent   = user.username;
       }
-
-      const res = await fetch(baseUrl + path, {
-        method,
-        headers,
-        credentials: "include",
-        body: body ? JSON.stringify(body) : null
-      });
-
-      let data;
-      const text = await res.text();
-      try { data = text ? JSON.parse(text) : null; } catch { data = text; }
-
-      if (!res.ok) {
-        throw { status: res.status, data };
-      }
-      return data;
-    }
-
-    async function register() {
-      try {
-        const body = {
-          username: document.getElementById("regUsername").value,
-          email: document.getElementById("regEmail").value,
-          password: document.getElementById("regPassword").value
-        };
-        const data = await api("/api/auth/register", { method: "POST", body });
-        setOut({ ok: true, data });
-      } catch (e) {
-        setOut({ ok: false, error: e });
-      }
-    }
-
-    async function login() {
-      try {
-        const body = {
-          usernameOrEmail: document.getElementById("loginKey").value,
-          password: document.getElementById("loginPassword").value
-        };
-        const data = await api("/api/auth/login", { method: "POST", body });
-        setToken(data.token);
-        setOut({ ok: true, data });
-      } catch (e) {
-        setOut({ ok: false, error: e });
-      }
-    }
-
-    async function me() {
-      try {
-        const data = await api("/api/auth/me", { method: "GET", auth: true });
-        setOut({ ok: true, data });
-      } catch (e) {
-        setOut({ ok: false, error: e });
-      }
-    }
-
-    async function logout() {
-      try {
-        const data = await api("/api/auth/logout", { method: "POST", auth: true });
-        setToken(null);
-        setOut({ ok: true, data });
-      } catch (e) {
-        setOut({ ok: false, error: e });
-      }
-    }
-
-    function clearToken() {
-      setToken(null);
-      setOut({ ok: true, message: "Token cleared in UI (server session may still exist if not logged out)" });
-    }
-
-    // init token view
-    setToken(getToken());
+    })();
 </script>
 </body>
 </html>

@@ -1,44 +1,155 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="utf-8"/>
-    <title>Forgot Password</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Forgot password – Cookiegram</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link rel="stylesheet" href="/styles.css"/>
 </head>
-<body style="font-family:Arial;max-width:700px;margin:30px auto;padding:0 16px">
-<h2>Forgot Password</h2>
-<p><a href="/">Home</a></p>
+<body>
+<div class="page-wrapper">
+    <nav class="nav">
+        <a href="/" class="nav-brand"><span class="cookie-dot"></span>cookiegram</a>
+        <div class="nav-links">
+            <a href="/login.html">← sign in</a>
+        </div>
+    </nav>
 
-<label>Email</label><br/>
-<input id="email" style="width:97%;padding:10px;margin:8px 0" placeholder="h@x.com"/><br/>
-<button onclick="send()" style="padding:10px 14px">Send Reset Email</button>
+    <main class="auth-outer">
+        <div class="auth-card">
 
-<p style="margin-top:14px;color:#555">
-    If the email exists, you’ll receive a reset link (check spam too).
-</p>
+            <!-- ── Step 1: email ── -->
+            <div id="step-email">
+                <div class="form-eyebrow fade-up">password reset</div>
+                <h1 class="form-title fade-up d1">forgot<br/><em>password?</em></h1>
+                <p class="form-subtitle fade-up d2">enter your email — we'll send a reset link to mailhog.</p>
 
-<pre id="out" style="background:#f6f6f6;padding:8px;border-radius:10px;margin-top:16px">(no request yet)</pre>
+                <div id="s1-alert" class="alert"></div>
 
+                <form id="email-form" novalidate>
+                    <div class="field fade-up d3">
+                        <label for="email">email</label>
+                        <div class="input-wrap">
+                            <input id="email" type="email" placeholder="h@example.com" autocomplete="email"/>
+                        </div>
+                        <div class="field-error"></div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary fade-up d4" id="send-btn">
+                        <span class="btn-spinner"></span>
+                        <span class="btn-label">send reset link</span>
+                    </button>
+                </form>
+
+                <div class="form-footer fade-up d5"><a href="/login.html">← back to sign in</a></div>
+            </div>
+
+            <!-- ── Step 2: paste token from mailhog ── -->
+            <div id="step-token" class="hidden">
+                <div class="form-eyebrow fade-up">check mailhog</div>
+                <h1 class="form-title fade-up d1">grab your<br/><em>token.</em></h1>
+                <p class="form-subtitle fade-up d2">
+                    the email was sent. open mailhog, copy your token, paste it below.
+                </p>
+
+                <a href="http://localhost:8025" target="_blank"
+                   class="btn btn-outline-neon fade-up d2"
+                   style="width:100%;justify-content:center;margin-bottom:20px;">
+                    open mailhog → localhost:8025
+                </a>
+
+                <div class="step-box fade-up d3">
+                    <div class="step-box-label">how to get your token</div>
+                    <ol>
+                        <li>open mailhog and click the reset email</li>
+                        <li>find the link ending in <code>?token=abc123...</code></li>
+                        <li>copy everything <strong>after</strong> <code>?token=</code></li>
+                        <li>paste it in the box below</li>
+                    </ol>
+                </div>
+
+                <div id="s2-alert" class="alert"></div>
+
+                <div class="field fade-up d4">
+                    <label for="token-paste">your token</label>
+                    <div class="input-wrap">
+                        <input id="token-paste" type="text"
+                               placeholder="paste token here…"
+                               autocomplete="off" autocapitalize="none" spellcheck="false"
+                               style="font-family:var(--font-mono);font-size:.8rem;"/>
+                    </div>
+                    <div class="field-error"></div>
+                </div>
+
+                <button class="btn btn-primary fade-up d5" id="continue-btn" onclick="goToReset()">
+                    <span class="btn-spinner"></span>
+                    <span class="btn-label">continue to reset →</span>
+                </button>
+
+                <div class="form-footer" style="margin-top:20px;">
+                    <button onclick="backToEmail()"
+                            style="background:none;border:none;color:var(--neon);font-family:var(--font-mono);font-size:.75rem;cursor:pointer;">
+                        ← different email
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="footer">© 2025 cookiegram</footer>
+</div>
+
+<script src="/app.js"></script>
 <script>
-    const baseUrl = "http://localhost:8080";
-    function setOut(x){ document.getElementById("out").textContent = JSON.stringify(x,null,2); }
+    const s1Alert   = document.getElementById('s1-alert');
+    const sendBtn   = document.getElementById('send-btn');
+    const emailInp  = document.getElementById('email');
 
-    async function send(){
-      try{
-        const res = await fetch(baseUrl + "/api/auth/forgot-password", {
-          method:"POST",
-          credentials: "include",
-          headers:{ "Content-Type":"application/json" },
-          body: JSON.stringify({ email: document.getElementById("email").value })
-        });
+    emailInp.addEventListener('input', function() { clearFieldError(this); });
 
-        const text = await res.text();
-        let data;
-        try { data = text ? JSON.parse(text) : null; } catch { data = { raw: text }; }
-
-        setOut({ status: res.status, data });
-      } catch(e){
-        setOut({error:String(e)});
+    document.getElementById('email-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      hideAlert(s1Alert);
+      const email = emailInp.value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setFieldError(emailInp, 'invalid email'); return;
       }
+      setLoading(sendBtn, true);
+      try { await apiFetch('/api/auth/forgot-password', { method:'POST', body:{ email } }); } catch(_) {}
+      setLoading(sendBtn, false);
+      document.getElementById('step-email').classList.add('hidden');
+      document.getElementById('step-token').classList.remove('hidden');
+      document.getElementById('token-paste').focus();
+    });
+
+    // Auto-extract token if full URL is pasted
+    document.getElementById('token-paste').addEventListener('input', function() {
+      clearFieldError(this);
+      const v = this.value.trim();
+      const m = v.match(/[?&#]token=([^&\s#]+)/);
+      if (m) { this.value = m[1]; setFieldSuccess(this); }
+    });
+
+    document.getElementById('token-paste').addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); goToReset(); }
+    });
+
+    function goToReset() {
+      const s2Alert = document.getElementById('s2-alert');
+      hideAlert(s2Alert);
+      const token = document.getElementById('token-paste').value.trim();
+      if (!token)            { setFieldError(document.getElementById('token-paste'), 'paste your token first'); return; }
+      if (token.length < 20) { setFieldError(document.getElementById('token-paste'), 'token looks too short — copy the full value'); return; }
+      window.location.href = '/reset.html?token=' + encodeURIComponent(token);
+    }
+
+    function backToEmail() {
+      document.getElementById('step-token').classList.add('hidden');
+      document.getElementById('step-email').classList.remove('hidden');
+      setLoading(sendBtn, false);
     }
 </script>
 </body>
