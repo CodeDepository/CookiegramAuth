@@ -11,6 +11,7 @@ import org.example.cookiegram.auth.exception.UnauthorizedException;
 import org.example.cookiegram.auth.security.AuthenticatedUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 
 
 import java.time.Duration;
@@ -27,18 +28,27 @@ public class AuthService {
     private final PasswordService passwords;
     private static final Duration RESET_TTL = Duration.ofMinutes(15);
     private final PasswordResetTokenRepository resetTokens;
+    private final EmailService emailService;
+
+    @Value("${cookiegram.base-url}")
+    private String baseUrl;
+
+    @Value("${cookiegram.mail.from}")
+    private String mailFrom;
 
 
     public AuthService(
             UserRepository users,
             SessionTokenRepository sessions,
             PasswordService passwords,
-            PasswordResetTokenRepository resetTokens
+            PasswordResetTokenRepository resetTokens,
+            EmailService emailService
     ) {
         this.users = users;
         this.sessions = sessions;
         this.passwords = passwords;
         this.resetTokens = resetTokens;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -95,24 +105,33 @@ public class AuthService {
 
 
     @Transactional
-    public ForgotPasswordResponse forgotPassword(ForgotPasswordRequest req) {
+    public MessageResponse forgotPassword(ForgotPasswordRequest req) {
         String email = req.email.trim().toLowerCase();
 
-        // Security best practice: don't reveal if email exists.
-        // But in DEV, we’ll return token only if user exists.
         var userOpt = users.findByEmailIgnoreCase(email);
+
+        // Always return same message (don’t leak whether user exists)
         if (userOpt.isEmpty()) {
-            return new ForgotPasswordResponse("If that email exists, a reset link was generated.", null);
+            return new MessageResponse("If that email exists, a reset link was sent.");
         }
 
         User user = userOpt.get();
 
-        String token = UUID.randomUUID().toString().replace("-", "") + UUID.randomUUID().toString().replace("-", "");
-        Instant expiresAt = Instant.now().plus(RESET_TTL);
+        String token = UUID.randomUUID().toString().replace("-", "") +
+                UUID.randomUUID().toString().replace("-", "");
 
+        Instant expiresAt = Instant.now().plus(RESET_TTL);
         resetTokens.save(new PasswordResetToken(token, user, expiresAt));
 
-        return new ForgotPasswordResponse("Reset token generated (DEV). Use it on /reset.html", token);
+        String link = baseUrl + "/reset.html?token=" + token;
+
+        String body = "Cookiegram password reset\n\n" +
+                "Click this link to reset your password:\n" + link + "\n\n" +
+                "This link expires in 15 minutes.\n";
+
+        emailService.send(mailFrom, user.getEmail(), "Reset your Cookiegram password", body);
+
+        return new MessageResponse("If that email exists, a reset link was sent.");
     }
 
     @Transactional

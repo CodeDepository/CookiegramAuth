@@ -1,13 +1,20 @@
 <!doctype html>
-<html>
-<head><meta charset="utf-8"/><title>Forgot Password</title></head>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Forgot Password</title>
+</head>
 <body style="font-family:Arial;max-width:700px;margin:30px auto;padding:0 16px">
 <h2>Forgot Password</h2>
 <p><a href="/">Home</a></p>
 
 <label>Email</label><br/>
 <input id="email" style="width:97%;padding:10px;margin:8px 0" placeholder="h@x.com"/><br/>
-<button onclick="send()" style="padding:10px 14px">Generate Reset Token</button>
+<button onclick="send()" style="padding:10px 14px">Send Reset Email</button>
+
+<p style="margin-top:14px;color:#555">
+    If the email exists, you’ll receive a reset link (check spam too).
+</p>
 
 <pre id="out" style="background:#f6f6f6;padding:8px;border-radius:10px;margin-top:16px">(no request yet)</pre>
 
@@ -19,17 +26,16 @@
       try{
         const res = await fetch(baseUrl + "/api/auth/forgot-password", {
           method:"POST",
+          credentials: "include",
           headers:{ "Content-Type":"application/json" },
           body: JSON.stringify({ email: document.getElementById("email").value })
         });
-        const data = await res.json();
-        setOut(data);
 
-        if (data.resetToken) {
-          // Quick link to reset page:
-          const link = baseUrl + "/reset.html?token=" + encodeURIComponent(data.resetToken);
-          setOut({ ...data, resetLink: link });
-        }
+        const text = await res.text();
+        let data;
+        try { data = text ? JSON.parse(text) : null; } catch { data = { raw: text }; }
+
+        setOut({ status: res.status, data });
       } catch(e){
         setOut({error:String(e)});
       }

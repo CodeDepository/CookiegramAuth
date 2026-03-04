@@ -1,3 +1,16 @@
+#services:
+#  cookiegram-auth:
+#    build: .
+#    ports:
+#      - "8080:8080"
+#    volumes:
+#      - cookiegram_data:/app/data
+#    environment:
+#      - SERVER_PORT=8080
+#
+#volumes:
+#  cookiegram_data:
+
 services:
   cookiegram-auth:
     build: .
@@ -7,6 +20,22 @@ services:
       - cookiegram_data:/app/data
     environment:
       - SERVER_PORT=8080
+      - COOKIEGRAM_BASE_URL=http://localhost:8080
+      - COOKIEGRAM_MAIL_FROM=noreply@cookiegram.local
+      - MAIL_HOST=mailhog
+      - MAIL_PORT=1025
+      - MAIL_USERNAME=
+      - MAIL_PASSWORD=
+      - MAIL_SMTP_AUTH=false
+      - MAIL_STARTTLS=false
+    depends_on:
+      - mailhog
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "8025:8025"   # MailHog web inbox
+      - "1025:1025"   # SMTP
 
 volumes:
   cookiegram_data:

@@ -21,6 +21,15 @@ public class AuthFilter extends OncePerRequestFilter {
         this.authService = authService;
     }
 
+    private String readCookie(HttpServletRequest request, String name) {
+        var cookies = request.getCookies();
+        if (cookies == null) return null;
+        for (var c : cookies) {
+            if (name.equals(c.getName())) return c.getValue();
+        }
+        return null;
+    }
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
@@ -46,12 +55,12 @@ public class AuthFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         try {
-            String token = request.getHeader("X-Auth-Token");
+            String token = readCookie(request, "CG_SESSION");
             if (token == null || token.isBlank()) {
-                throw new UnauthorizedException("Missing X-Auth-Token");
+                throw new UnauthorizedException("Missing session cookie");
             }
-
             AuthenticatedUser user = authService.requireUserByToken(token.trim());
+
             request.setAttribute(ATTR_USER, user);
 
             filterChain.doFilter(request, response);
