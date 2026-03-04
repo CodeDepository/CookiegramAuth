@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Sign in – Cookiegram</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link rel="stylesheet" href="/styles.css"/>
+</head>
+<body>
+<div class="page-wrapper">
+    <nav class="nav">
+        <a href="/" class="nav-brand"><span class="cookie-dot"></span>cookiegram</a>
+        <div class="nav-links">
+            <a href="/register.html" class="nav-pill">create account</a>
+        </div>
+    </nav>
+
+    <main class="auth-outer">
+        <div class="auth-card">
+
+            <div class="form-eyebrow fade-up">welcome back</div>
+            <h1 class="form-title fade-up d1">sign <em>in.</em></h1>
+            <p class="form-subtitle fade-up d2">your cookies are waiting.</p>
+
+            <div id="alert" class="alert"></div>
+
+            <form id="form" novalidate>
+
+                <div class="field fade-up d2">
+                    <label for="key">username or email</label>
+                    <div class="input-wrap">
+                        <input id="key" type="text" placeholder="harry or h@example.com"
+                               autocomplete="username" autocapitalize="none"/>
+                    </div>
+                    <div class="field-error"></div>
+                </div>
+
+                <div class="field fade-up d3">
+                    <label for="pw">password</label>
+                    <div class="input-wrap">
+                        <input id="pw" type="password" placeholder="••••••••"
+                               autocomplete="current-password"/>
+                        <button type="button" class="pw-toggle" aria-label="Show password"></button>
+                    </div>
+                    <div class="field-error"></div>
+                </div>
+
+                <div style="text-align:right;margin-bottom:22px;">
+                    <a href="/forgot.html" style="font-family:var(--font-mono);font-size:.75rem;color:var(--text-muted);">
+                        forgot password?
+                    </a>
+                </div>
+
+                <button type="submit" class="btn btn-primary fade-up d4" id="submit-btn">
+                    <span class="btn-spinner"></span>
+                    <span class="btn-label">sign in</span>
+                </button>
+            </form>
+
+            <div class="form-footer fade-up d5">
+                no account? <a href="/register.html">create one →</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">© 2025 cookiegram</footer>
+</div>
+
+<script src="/app.js"></script>
+<script>
+    checkAuth().then(u => { if (u) window.location.href = '/'; });
+
+    const alertEl = document.getElementById('alert');
+    const btn     = document.getElementById('submit-btn');
+
+    // Live clear
+    ['key','pw'].forEach(id => {
+      document.getElementById(id).addEventListener('input', function() {
+        clearFieldError(this);
+      });
+    });
+
+    document.getElementById('form').addEventListener('submit', async e => {
+      e.preventDefault();
+      hideAlert(alertEl);
+
+      const key = document.getElementById('key').value.trim();
+      const pw  = document.getElementById('pw').value;
+
+      let ok = true;
+      if (!key) { setFieldError(document.getElementById('key'), 'required'); ok = false; }
+      if (!pw)  { setFieldError(document.getElementById('pw'),  'required'); ok = false; }
+      if (!ok) return;
+
+      setLoading(btn, true);
+      try {
+        await apiFetch('/api/auth/login', { method:'POST', body:{ usernameOrEmail:key, password:pw } });
+        toast.success('welcome back 🍪');
+        setTimeout(() => { window.location.href = '/'; }, 700);
+      } catch (err) {
+        setLoading(btn, false);
+        showAlert(alertEl, 'error',
+          err.status === 401 ? 'wrong username/email or password.' : parseError(err.data, err.status)
+        );
+      }
+    });
+</script>
+</body>
+</html>

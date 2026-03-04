@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Create account – Cookiegram</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link rel="stylesheet" href="/styles.css"/>
+</head>
+<body>
+<div class="page-wrapper">
+    <nav class="nav">
+        <a href="/" class="nav-brand"><span class="cookie-dot"></span>cookiegram</a>
+        <div class="nav-links">
+            <a href="/login.html">sign in</a>
+        </div>
+    </nav>
+
+    <main class="auth-outer">
+        <div class="auth-card">
+
+            <div class="form-eyebrow fade-up">join cookiegram</div>
+            <h1 class="form-title fade-up d1">let's <em>bake.</em></h1>
+            <p class="form-subtitle fade-up d2">create an account to start ordering.</p>
+
+            <div id="alert" class="alert"></div>
+
+            <form id="form" novalidate>
+
+                <div class="field fade-up d2">
+                    <label for="username">username</label>
+                    <div class="input-wrap">
+                        <input id="username" type="text" placeholder="harry"
+                               autocomplete="username" autocapitalize="none" minlength="3" maxlength="30"/>
+                    </div>
+                    <div class="field-error"></div>
+                </div>
+
+                <div class="field fade-up d3">
+                    <label for="email">email</label>
+                    <div class="input-wrap">
+                        <input id="email" type="email" placeholder="h@example.com" autocomplete="email"/>
+                    </div>
+                    <div class="field-error"></div>
+                </div>
+
+                <div class="field fade-up d3">
+                    <label for="password">password</label>
+                    <div class="input-wrap">
+                        <input id="password" type="password" placeholder="at least 6 characters"
+                               autocomplete="new-password"/>
+                        <button type="button" class="pw-toggle" aria-label="Show password"></button>
+                    </div>
+                    <div class="field-error"></div>
+                </div>
+
+                <!-- Strength bar -->
+                <div class="strength-wrap hidden" id="strength-wrap">
+                    <div class="strength-track">
+                        <div class="strength-bar" id="strength-bar"></div>
+                    </div>
+                    <div class="strength-label" id="strength-label"></div>
+                </div>
+
+                <div class="field fade-up d4">
+                    <label for="confirm">confirm password</label>
+                    <div class="input-wrap">
+                        <input id="confirm" type="password" placeholder="repeat password"
+                               autocomplete="new-password"/>
+                        <button type="button" class="pw-toggle" aria-label="Show password"></button>
+                    </div>
+                    <div class="field-error"></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary fade-up d5" id="submit-btn">
+                    <span class="btn-spinner"></span>
+                    <span class="btn-label">create account</span>
+                </button>
+            </form>
+
+            <div class="form-footer fade-up d5">
+                already have an account? <a href="/login.html">sign in →</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">© 2025 cookiegram</footer>
+</div>
+
+<script src="/app.js"></script>
+<script>
+    checkAuth().then(u => { if (u) window.location.href = '/'; });
+
+    const alertEl = document.getElementById('alert');
+    const btn     = document.getElementById('submit-btn');
+    const pwInput = document.getElementById('password');
+    const cfInput = document.getElementById('confirm');
+
+    initStrength('password', 'strength-bar', 'strength-label', 'strength-wrap');
+
+    // Live confirm check
+    cfInput.addEventListener('input', function() {
+      if (this.value && this.value !== pwInput.value) setFieldError(this, 'passwords do not match');
+      else if (this.value) setFieldSuccess(this);
+    });
+
+    ['username','email','password'].forEach(id => {
+      document.getElementById(id).addEventListener('input', function() { clearFieldError(this); });
+    });
+
+    document.getElementById('form').addEventListener('submit', async e => {
+      e.preventDefault();
+      hideAlert(alertEl);
+
+      const username = document.getElementById('username').value.trim();
+      const email    = document.getElementById('email').value.trim();
+      const password = pwInput.value;
+      const confirm  = cfInput.value;
+
+      let ok = true;
+      if (username.length < 3)                          { setFieldError(document.getElementById('username'), 'at least 3 characters'); ok = false; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))   { setFieldError(document.getElementById('email'),    'invalid email');         ok = false; }
+      if (password.length < 6)                          { setFieldError(pwInput, 'at least 6 characters');                             ok = false; }
+      if (password !== confirm)                         { setFieldError(cfInput, 'passwords do not match');                            ok = false; }
+      if (!ok) return;
+
+      setLoading(btn, true);
+      try {
+        await apiFetch('/api/auth/register', { method:'POST', body:{ username, email, password } });
+        await apiFetch('/api/auth/login',    { method:'POST', body:{ usernameOrEmail:username, password } });
+        toast.success('account created 🍪', 'redirecting…');
+        setTimeout(() => { window.location.href = '/'; }, 800);
+      } catch (err) {
+        setLoading(btn, false);
+        showAlert(alertEl, 'error', parseError(err.data, err.status));
+      }
+    });
+</script>
+</body>
+</html>

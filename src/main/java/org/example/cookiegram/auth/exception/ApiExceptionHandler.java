@@ -1,20 +1,33 @@
 package org.example.cookiegram.auth.exception;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
-    @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<Map<String, Object>> unauthorized(UnauthorizedException ex) {
-        return ResponseEntity.status(401).body(Map.of("error", ex.getMessage()));
-    }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> badRequest(IllegalArgumentException ex) {
-        return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
+        List<Map<String, String>> errors = new ArrayList<>();
+
+        ex.getBindingResult().getFieldErrors().forEach(err -> {
+            Map<String, String> e = new HashMap<>();
+            e.put("field", err.getField());
+            e.put("message", err.getDefaultMessage());
+            errors.add(e);
+        });
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("error", "Validation failed");
+        body.put("details", errors);
+
+        return ResponseEntity.badRequest().body(body);
     }
 }

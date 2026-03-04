@@ -5,8 +5,12 @@ import org.example.cookiegram.auth.service.AuthService;
 import org.example.cookiegram.auth.security.AuthenticatedUser;
 import org.example.cookiegram.auth.dto.*;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpHeaders;
+import jakarta.servlet.http.HttpServletRequest;
+import java.time.Duration;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -25,7 +29,19 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest req) {
-        return ResponseEntity.ok(auth.login(req));
+        LoginResponse res = auth.login(req);
+
+        ResponseCookie cookie = ResponseCookie.from("CG_SESSION", res.token)
+                .httpOnly(true)
+                .sameSite("Lax")
+                .path("/")
+                // .secure(true) // enable later when using HTTPS
+                .maxAge(Duration.ofHours(24))
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(res);
     }
 
     // Protected now (filter enforces auth)
@@ -35,7 +51,7 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<ForgotPasswordResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest req) {
+    public ResponseEntity<MessageResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest req) {
         return ResponseEntity.ok(auth.forgotPassword(req));
     }
 
@@ -46,8 +62,31 @@ public class AuthController {
 
     // Protected now
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestHeader("X-Auth-Token") String token) {
-        auth.logout(token.trim());
-        return ResponseEntity.ok().body(java.util.Map.of("message", "Logged out"));
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        String token = null;
+        var cookies = request.getCookies();
+        if (cookies != null) {
+            for (var c : cookies) {
+                if ("CG_SESSION".equals(c.getName())) {
+                    token = c.getValue();
+                    break;
+                }
+            }
+        }
+
+        if (token != null && !token.isBlank()) {
+            auth.logout(token.trim());
+        }
+
+        ResponseCookie clear = ResponseCookie.from("CG_SESSION", "")
+                .httpOnly(true)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(0)
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, clear.toString())
+                .body(java.util.Map.of("message", "Logged out"));
     }
 }

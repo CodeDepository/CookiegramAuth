@@ -1,45 +1,179 @@
 <!doctype html>
-<html>
-<head><meta charset="utf-8"/><title>Reset Password</title></head>
-<body style="font-family:Arial;max-width:700px;margin:30px auto;padding:0 16px">
-<h2>Reset Password</h2>
-<p><a href="/">Home</a> | <a href="/forgot.html">Forgot</a></p>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Reset password – Cookiegram</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link rel="stylesheet" href="/styles.css"/>
+</head>
+<body>
+<div class="page-wrapper">
+    <nav class="nav">
+        <a href="/" class="nav-brand"><span class="cookie-dot"></span>cookiegram</a>
+        <div class="nav-links">
+            <a href="/login.html">sign in</a>
+        </div>
+    </nav>
 
-<label>Token</label><br/>
-<input id="token" style="width:97%;padding:10px;margin:8px 0" placeholder="paste token"/><br/>
+    <main class="auth-outer">
+        <div class="auth-card">
 
-<label>New Password</label><br/>
-<input id="pw" type="password" style="width:97%;padding:10px;margin:8px 0" placeholder="new password"/><br/>
+            <!-- no token -->
+            <div id="state-none" class="hidden" style="text-align:center;">
+                <div style="font-size:2.5rem;margin-bottom:20px;">🔗</div>
+                <div class="form-eyebrow" style="justify-content:center;display:flex;">missing token</div>
+                <h2 class="form-title" style="text-align:center;margin-bottom:10px;">no token found</h2>
+                <p class="form-subtitle" style="text-align:center;margin-bottom:8px;">
+                    this page needs a <code style="font-family:var(--font-mono);color:var(--neon);font-size:.85em;">?token=</code> in the url.<br/>
+                    go back and paste your token.
+                </p>
+                <p style="font-family:var(--font-mono);font-size:.7rem;color:var(--text-muted);background:var(--ink-soft);border:1px solid var(--ink-border);padding:10px 12px;border-radius:8px;word-break:break-all;margin-bottom:24px;text-align:left;" id="debug-url"></p>
+                <a href="/forgot.html" class="btn btn-primary" style="justify-content:center;">← back to forgot password</a>
+            </div>
 
-<button onclick="reset()" style="padding:10px 14px">Reset Password</button>
+            <!-- form -->
+            <div id="state-form" class="hidden">
+                <div class="form-eyebrow fade-up">almost there</div>
+                <h1 class="form-title fade-up d1">new <em>password.</em></h1>
+                <p class="form-subtitle fade-up d2">pick something strong.</p>
 
-<pre id="out" style="background:#f6f6f6;padding:12px;border-radius:10px;margin-top:16px">(no request yet)</pre>
+                <!-- token pill -->
+                <div class="info-box fade-up d2">
+                    <svg width="13" height="13" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 7v3.5M8 5.5h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    token: <span id="token-preview" style="color:var(--text-soft);"></span>
+                </div>
 
+                <div id="reset-alert" class="alert"></div>
+
+                <form id="reset-form" novalidate>
+                    <input type="hidden" id="token"/>
+
+                    <div class="field fade-up d3">
+                        <label for="newPw">new password</label>
+                        <div class="input-wrap">
+                            <input id="newPw" type="password" placeholder="at least 6 characters"
+                                   autocomplete="new-password"/>
+                            <button type="button" class="pw-toggle" aria-label="Show password"></button>
+                        </div>
+                        <div class="field-error"></div>
+                    </div>
+
+                    <div class="strength-wrap hidden" id="sw">
+                        <div class="strength-track"><div class="strength-bar" id="sb"></div></div>
+                        <div class="strength-label" id="sl"></div>
+                    </div>
+
+                    <div class="field fade-up d4">
+                        <label for="confirmPw">confirm password</label>
+                        <div class="input-wrap">
+                            <input id="confirmPw" type="password" placeholder="repeat password"
+                                   autocomplete="new-password"/>
+                            <button type="button" class="pw-toggle" aria-label="Show password"></button>
+                        </div>
+                        <div class="field-error"></div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary fade-up d5" id="reset-btn">
+                        <span class="btn-spinner"></span>
+                        <span class="btn-label">reset password</span>
+                    </button>
+                </form>
+
+                <div class="form-footer" style="margin-top:20px;">
+                    <a href="/forgot.html">← use a different token</a>
+                </div>
+            </div>
+
+            <!-- success -->
+            <div id="state-success" class="hidden" style="text-align:center;">
+                <div style="width:64px;height:64px;border-radius:50%;background:var(--success-bg);border:1.5px solid rgba(78,203,113,.4);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;animation:popIn .4s cubic-bezier(.16,1,.3,1) both;">
+                    <svg width="28" height="28" fill="none" viewBox="0 0 28 28">
+                        <path d="M6 14l5 5 11-10" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="form-eyebrow" style="display:flex;justify-content:center;">done</div>
+                <h2 class="form-title" style="text-align:center;margin-bottom:10px;">password <em>updated!</em></h2>
+                <p class="form-subtitle" style="text-align:center;margin-bottom:28px;">
+                    you can now sign in with your new password.
+                </p>
+                <a href="/login.html" class="btn btn-primary" style="justify-content:center;">sign in now →</a>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="footer">© 2025 cookiegram</footer>
+</div>
+
+<style>
+    @keyframes popIn { from{opacity:0;transform:scale(.5)} to{opacity:1;transform:scale(1)} }
+</style>
+
+<script src="/app.js"></script>
 <script>
-    const baseUrl = "http://localhost:8080";
-    function setOut(x){ document.getElementById("out").textContent = JSON.stringify(x,null,2); }
-
-    // Autofill token from URL ?token=
-    const params = new URLSearchParams(window.location.search);
-    const t = params.get("token");
-    if (t) document.getElementById("token").value = t;
-
-    async function reset(){
-      try{
-        const res = await fetch(baseUrl + "/api/auth/reset-password", {
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
-          body: JSON.stringify({
-            token: document.getElementById("token").value,
-            newPassword: document.getElementById("pw").value
-          })
-        });
-        const data = await res.json();
-        setOut(data);
-      } catch(e){
-        setOut({error:String(e)});
-      }
+    function extractToken() {
+      const p = new URLSearchParams(window.location.search);
+      const t = p.get('token');
+      if (t && t.trim().length > 10) return t.trim();
+      const raw = window.location.search + window.location.hash;
+      const m = raw.match(/[?&#]token=([^&\s#]+)/);
+      if (m && m[1].length > 10) return decodeURIComponent(m[1]);
+      return null;
     }
+
+    const token = extractToken();
+
+    if (!token) {
+      document.getElementById('state-none').classList.remove('hidden');
+      document.getElementById('debug-url').textContent = 'current url: ' + window.location.href;
+    } else {
+      document.getElementById('token').value = token;
+      document.getElementById('token-preview').textContent =
+        token.substring(0, 8) + '…' + token.substring(token.length - 6);
+      document.getElementById('state-form').classList.remove('hidden');
+    }
+
+    initStrength('newPw', 'sb', 'sl', 'sw');
+
+    const newPwInp = document.getElementById('newPw');
+    const cfPwInp  = document.getElementById('confirmPw');
+
+    cfPwInp.addEventListener('input', function() {
+      if (this.value && this.value !== newPwInp.value) setFieldError(this, 'passwords do not match');
+      else if (this.value) setFieldSuccess(this);
+    });
+
+    document.getElementById('reset-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const alertEl = document.getElementById('reset-alert');
+      const btn     = document.getElementById('reset-btn');
+      hideAlert(alertEl);
+
+      const pw      = newPwInp.value;
+      const confirm = cfPwInp.value;
+      const tok     = document.getElementById('token').value;
+
+      let ok = true;
+      if (pw.length < 6)       { setFieldError(newPwInp, 'at least 6 characters'); ok = false; }
+      if (pw !== confirm)       { setFieldError(cfPwInp,  'passwords do not match'); ok = false; }
+      if (!ok) return;
+
+      setLoading(btn, true);
+      try {
+        await apiFetch('/api/auth/reset-password', { method:'POST', body:{ token:tok, newPassword:pw } });
+        document.getElementById('state-form').classList.add('hidden');
+        document.getElementById('state-success').classList.remove('hidden');
+      } catch (err) {
+        setLoading(btn, false);
+        showAlert(alertEl, 'error',
+          (err.status === 400 || err.status === 500)
+            ? 'token is invalid or expired — go back and request a new one.'
+            : parseError(err.data, err.status)
+        );
+      }
+    });
 </script>
 </body>
 </html>
