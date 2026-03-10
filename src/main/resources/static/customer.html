@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>My Dashboard – Cookiegram</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link rel="stylesheet" href="/styles.css"/>
+</head>
+<body>
+<div class="page-wrapper">
+
+    <!-- Nav -->
+    <nav class="nav">
+        <a href="/customer.html" class="nav-brand"><span class="cookie-dot"></span>cookiegram</a>
+        <div class="nav-links">
+            <span id="nav-auth"><a href="/login.html" class="nav-pill">sign in</a></span>
+            <span id="nav-user" class="hidden" style="display:flex;gap:8px;align-items:center;">
+        <span class="role-badge" id="nav-role"></span>
+        <span id="nav-username" style="font-family:var(--font-mono);font-size:.8rem;color:var(--text-soft);"></span>
+        <a href="/customer.html" id="nav-dashboard" style="font-family:var(--font-mono);font-size:.8rem;">dashboard</a>
+        <button id="nav-logout">sign out</button>
+      </span>
+        </div>
+    </nav>
+
+    <!-- Loading state -->
+    <div id="state-loading" class="dash-layout">
+        <div style="display:flex;gap:16px;align-items:center;margin-bottom:40px;padding-bottom:32px;border-bottom:1px solid var(--ink-border);">
+            <div class="skeleton" style="width:60px;height:60px;border-radius:50%;flex-shrink:0;"></div>
+            <div style="flex:1;">
+                <div class="skeleton skeleton-line" style="width:200px;height:20px;"></div>
+                <div class="skeleton skeleton-line" style="width:120px;height:12px;margin-top:8px;"></div>
+            </div>
+        </div>
+        <div class="stat-grid">
+            <div class="skeleton" style="height:90px;border-radius:14px;"></div>
+            <div class="skeleton" style="height:90px;border-radius:14px;"></div>
+            <div class="skeleton" style="height:90px;border-radius:14px;"></div>
+        </div>
+        <div class="skeleton" style="height:160px;border-radius:14px;margin-bottom:16px;"></div>
+        <div class="skeleton" style="height:160px;border-radius:14px;"></div>
+    </div>
+
+    <!-- Access denied -->
+    <div id="state-denied" class="access-denied hidden">
+        <div class="access-denied-code">403</div>
+        <h2 class="access-denied-title">wrong door.</h2>
+        <p class="access-denied-sub">this page is for customers only. you'll be redirected to your dashboard.</p>
+        <a href="/" class="btn btn-ghost" style="width:auto;padding:12px 28px;">go home</a>
+    </div>
+
+    <!-- Dashboard -->
+    <main id="state-dash" class="dash-layout hidden">
+
+        <!-- Header -->
+        <div class="dash-header fade-up">
+            <div class="dash-avatar" id="dash-avatar"></div>
+            <div class="dash-welcome">
+                <div class="dash-welcome-name">hey, <em id="dash-name"></em> 🍪</div>
+                <div class="dash-welcome-sub" id="dash-sub">your cookie dashboard</div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="dash-section-label fade-up">your activity</div>
+        <div class="stat-grid fade-up d1">
+            <div class="stat-card">
+                <div class="stat-card-value">0</div>
+                <div class="stat-card-label">orders placed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-value" id="promo-count">–</div>
+                <div class="stat-card-label">active promos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-value">🍫</div>
+                <div class="stat-card-label">flavour: choc chip</div>
+            </div>
+        </div>
+
+        <!-- Promotions -->
+        <div class="dash-section-label fade-up d2">your promotions</div>
+        <div id="promos-grid" class="content-grid fade-up d2">
+            <!-- populated by JS -->
+        </div>
+
+        <!-- Place order CTA -->
+        <div class="dash-section-label fade-up d3">ready to order?</div>
+        <div class="fade-up d3" style="background:var(--ink-card);border:1px solid var(--ink-border);border-radius:var(--radius);padding:28px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
+            <div>
+                <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:6px;">chocolate chip cookie</div>
+                <div style="font-size:.875rem;color:var(--text-soft);">baked fresh · custom message · delivered to your door</div>
+            </div>
+            <button class="btn btn-primary" style="width:auto;padding:13px 28px;" onclick="toast.info('coming soon 🍪','ordering will be available shortly!')">
+                place an order
+            </button>
+        </div>
+
+    </main>
+
+    <footer class="footer">© 2025 cookiegram · one cookie, infinite messages</footer>
+</div>
+
+<script src="/app.js"></script>
+<script>
+    const PROMO_ICONS = ['🎉','🚀','💸','🎁','⭐','🍪'];
+
+    (async () => {
+      const user = await requireAuth('CUSTOMER');
+      if (!user) return;
+
+      await hydrateNav();
+
+      // Hide loading, show dash
+      document.getElementById('state-loading').classList.add('hidden');
+      document.getElementById('state-dash').classList.remove('hidden');
+
+      document.getElementById('dash-avatar').textContent = user.username.charAt(0).toUpperCase();
+      document.getElementById('dash-name').textContent   = user.username;
+      document.getElementById('dash-sub').textContent    = user.email;
+
+      // Load promotions
+      try {
+        const data = await apiFetch('/api/promotions/my');
+        const promos = data.promotions || [];
+
+        document.getElementById('promo-count').textContent = promos.length;
+
+        const grid = document.getElementById('promos-grid');
+        if (promos.length === 0) {
+          grid.innerHTML = `<div style="color:var(--text-muted);font-family:var(--font-mono);font-size:.85rem;padding:20px 0;">no active promotions right now — check back soon!</div>`;
+        } else {
+          grid.innerHTML = promos.map((p, i) => `
+            <div class="content-card">
+              <span class="content-card-icon">${PROMO_ICONS[i % PROMO_ICONS.length]}</span>
+              <div class="content-card-title">${esc(p.title)}</div>
+              <div class="content-card-body">${esc(p.description)}</div>
+              <span class="content-card-tag">active offer</span>
+            </div>
+          `).join('');
+        }
+      } catch (err) {
+        document.getElementById('promos-grid').innerHTML =
+          `<div style="color:var(--error);font-family:var(--font-mono);font-size:.8rem;">could not load promotions — ${esc(err.message)}</div>`;
+      }
+    })();
+</script>
+</body>
+</html>
