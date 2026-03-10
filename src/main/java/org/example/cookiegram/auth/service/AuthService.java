@@ -2,6 +2,7 @@ package org.example.cookiegram.auth.service;
 
 import org.example.cookiegram.auth.dto.*;
 import org.example.cookiegram.auth.entity.PasswordResetToken;
+import org.example.cookiegram.auth.entity.UserRole;
 import org.example.cookiegram.auth.repository.PasswordResetTokenRepository;
 import org.example.cookiegram.auth.repository.SessionTokenRepository;
 import org.example.cookiegram.auth.repository.UserRepository;
@@ -63,10 +64,10 @@ public class AuthService {
             throw new IllegalArgumentException("Email already taken");
         }
 
-        User user = new User(username, email, passwords.store(req.password));
+        User user = new User(username, email, passwords.store(req.password), UserRole.CUSTOMER);
         users.save(user);
 
-        return new UserResponse(user.getId(), user.getUsername(), user.getEmail());
+        return new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getRole().name());
     }
 
     @Transactional
@@ -86,7 +87,7 @@ public class AuthService {
 
         sessions.save(new SessionToken(token, user, expiresAt));
 
-        return new LoginResponse(token, new UserResponse(user.getId(), user.getUsername(), user.getEmail()));
+        return new LoginResponse(token, new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getRole().name()));
     }
 
     @Transactional(readOnly = true)
@@ -100,7 +101,7 @@ public class AuthService {
 
         // IMPORTANT: read needed fields while still inside the transaction
         User u = session.getUser();
-        return new AuthenticatedUser(u.getId(), u.getUsername(), u.getEmail());
+        return new AuthenticatedUser(u.getId(), u.getUsername(), u.getEmail(), u.getRole().name());
     }
 
 

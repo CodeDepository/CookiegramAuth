@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Forgot password – Cookiegram</title>
+    <title>Forgot password - Cookiegram</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
     <link rel="stylesheet" href="/styles.css"/>
@@ -11,20 +11,20 @@
 <body>
 <div class="page-wrapper">
     <nav class="nav">
-        <a href="/" class="nav-brand"><span class="cookie-dot"></span>cookiegram</a>
+        <a href="/index.html" class="nav-brand"><span class="cookie-dot"></span>cookiegram</a>
         <div class="nav-links">
-            <a href="/login.html">← sign in</a>
+            <a href="/login.html"><- sign in</a>
         </div>
     </nav>
 
     <main class="auth-outer">
         <div class="auth-card">
 
-            <!-- ── Step 1: email ── -->
+            <!-- - Step 1: email - -->
             <div id="step-email">
                 <div class="form-eyebrow fade-up">password reset</div>
                 <h1 class="form-title fade-up d1">forgot<br/><em>password?</em></h1>
-                <p class="form-subtitle fade-up d2">enter your email — we'll send a reset link to mailhog.</p>
+                <p class="form-subtitle fade-up d2">enter your email  -  we'll send a reset link to mailhog.</p>
 
                 <div id="s1-alert" class="alert"></div>
 
@@ -43,10 +43,10 @@
                     </button>
                 </form>
 
-                <div class="form-footer fade-up d5"><a href="/login.html">← back to sign in</a></div>
+                <div class="form-footer fade-up d5"><a href="/login.html"><- back to sign in</a></div>
             </div>
 
-            <!-- ── Step 2: paste token from mailhog ── -->
+            <!-- - Step 2: paste token from mailhog - -->
             <div id="step-token" class="hidden">
                 <div class="form-eyebrow fade-up">check mailhog</div>
                 <h1 class="form-title fade-up d1">grab your<br/><em>token.</em></h1>
@@ -57,7 +57,7 @@
                 <a href="http://localhost:8025" target="_blank"
                    class="btn btn-outline-neon fade-up d2"
                    style="width:100%;justify-content:center;margin-bottom:20px;">
-                    open mailhog → localhost:8025
+                    open mailhog -> localhost:8025
                 </a>
 
                 <div class="step-box fade-up d3">
@@ -76,7 +76,7 @@
                     <label for="token-paste">your token</label>
                     <div class="input-wrap">
                         <input id="token-paste" type="text"
-                               placeholder="paste token here…"
+                               placeholder="paste token here..."
                                autocomplete="off" autocapitalize="none" spellcheck="false"
                                style="font-family:var(--font-mono);font-size:.8rem;"/>
                     </div>
@@ -85,13 +85,13 @@
 
                 <button class="btn btn-primary fade-up d5" id="continue-btn" onclick="goToReset()">
                     <span class="btn-spinner"></span>
-                    <span class="btn-label">continue to reset →</span>
+                    <span class="btn-label">continue to reset -></span>
                 </button>
 
                 <div class="form-footer" style="margin-top:20px;">
                     <button onclick="backToEmail()"
                             style="background:none;border:none;color:var(--neon);font-family:var(--font-mono);font-size:.75rem;cursor:pointer;">
-                        ← different email
+                        <- different email
                     </button>
                 </div>
             </div>
@@ -142,7 +142,7 @@
       hideAlert(s2Alert);
       const token = document.getElementById('token-paste').value.trim();
       if (!token)            { setFieldError(document.getElementById('token-paste'), 'paste your token first'); return; }
-      if (token.length < 20) { setFieldError(document.getElementById('token-paste'), 'token looks too short — copy the full value'); return; }
+      if (token.length < 20) { setFieldError(document.getElementById('token-paste'), 'token looks too short  -  copy the full value'); return; }
       window.location.href = '/reset.html?token=' + encodeURIComponent(token);
     }
 

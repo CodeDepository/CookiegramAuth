@@ -47,7 +47,7 @@ public class AuthController {
     // Protected now (filter enforces auth)
     @GetMapping("/me")
     public ResponseEntity<UserResponse> me(@RequestAttribute(AuthFilter.ATTR_USER) AuthenticatedUser user) {
-        return ResponseEntity.ok(new UserResponse(user.getId(), user.getUsername(), user.getEmail()));
+        return ResponseEntity.ok(new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getRole()));
     }
 
     @PostMapping("/forgot-password")

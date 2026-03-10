@@ -3,15 +3,18 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Sign in – Cookiegram</title>
+    <title>Sign in - Cookiegram</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
     <link rel="stylesheet" href="/styles.css"/>
 </head>
 <body>
 <div class="page-wrapper">
+
     <nav class="nav">
-        <a href="/" class="nav-brand"><span class="cookie-dot"></span>cookiegram</a>
+        <a href="/index.html" class="nav-brand">
+            <span class="cookie-dot"></span>cookiegram
+        </a>
         <div class="nav-links">
             <a href="/register.html" class="nav-pill">create account</a>
         </div>
@@ -19,7 +22,6 @@
 
     <main class="auth-outer">
         <div class="auth-card">
-
             <div class="form-eyebrow fade-up">welcome back</div>
             <h1 class="form-title fade-up d1">sign <em>in.</em></h1>
             <p class="form-subtitle fade-up d2">your cookies are waiting.</p>
@@ -40,7 +42,7 @@
                 <div class="field fade-up d3">
                     <label for="pw">password</label>
                     <div class="input-wrap">
-                        <input id="pw" type="password" placeholder="••••••••"
+                        <input id="pw" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
                                autocomplete="current-password"/>
                         <button type="button" class="pw-toggle" aria-label="Show password"></button>
                     </div>
@@ -57,52 +59,60 @@
                     <span class="btn-spinner"></span>
                     <span class="btn-label">sign in</span>
                 </button>
+
             </form>
 
             <div class="form-footer fade-up d5">
-                no account? <a href="/register.html">create one →</a>
+                no account? <a href="/register.html">create one &rarr;</a>
             </div>
         </div>
     </main>
 
-    <footer class="footer">© 2025 cookiegram</footer>
+    <footer class="footer">&#169; 2025 cookiegram</footer>
 </div>
 
 <script src="/app.js"></script>
 <script>
-    checkAuth().then(u => { if (u) window.location.href = '/'; });
+    var alertEl = document.getElementById('alert');
+    var btn     = document.getElementById('submit-btn');
 
-    const alertEl = document.getElementById('alert');
-    const btn     = document.getElementById('submit-btn');
+    document.getElementById('key').addEventListener('input', function() { clearFieldError(this); });
+    document.getElementById('pw').addEventListener('input',  function() { clearFieldError(this); });
 
-    // Live clear
-    ['key','pw'].forEach(id => {
-      document.getElementById(id).addEventListener('input', function() {
-        clearFieldError(this);
-      });
-    });
-
-    document.getElementById('form').addEventListener('submit', async e => {
+    document.getElementById('form').addEventListener('submit', async function(e) {
       e.preventDefault();
       hideAlert(alertEl);
 
-      const key = document.getElementById('key').value.trim();
-      const pw  = document.getElementById('pw').value;
+      var key = document.getElementById('key').value.trim();
+      var pw  = document.getElementById('pw').value;
 
-      let ok = true;
+      var ok = true;
       if (!key) { setFieldError(document.getElementById('key'), 'required'); ok = false; }
       if (!pw)  { setFieldError(document.getElementById('pw'),  'required'); ok = false; }
-      if (!ok) return;
+      if (!ok)  return;
 
       setLoading(btn, true);
       try {
-        await apiFetch('/api/auth/login', { method:'POST', body:{ usernameOrEmail:key, password:pw } });
-        toast.success('welcome back 🍪');
-        setTimeout(() => { window.location.href = '/'; }, 700);
+        /* Login returns { token, user: { id, username, email, role } } */
+        var res  = await apiFetch('/api/auth/login', {
+          method: 'POST',
+          body:   { usernameOrEmail: key, password: pw }
+        });
+
+        /* role is in the response body - no extra /api/auth/me call needed */
+        var role = (res && res.user && res.user.role) ? res.user.role : 'CUSTOMER';
+
+        toast.success('welcome back!');
+
+        /* Small delay so the cookie is committed before we navigate */
+        setTimeout(function() { redirectByRole(role); }, 500);
+
       } catch (err) {
         setLoading(btn, false);
         showAlert(alertEl, 'error',
-          err.status === 401 ? 'wrong username/email or password.' : parseError(err.data, err.status)
+          err.status === 401
+            ? 'wrong username/email or password.'
+            : parseError(err.data, err.status)
         );
       }
     });

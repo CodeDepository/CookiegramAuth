@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Owner Dashboard - Cookiegram</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link rel="stylesheet" href="/styles.css"/>
+</head>
+<body>
+<div class="page-wrapper">
+
+    <nav class="nav">
+        <a href="/owner.html" class="nav-brand">
+            <span class="cookie-dot"></span>cookiegram
+        </a>
+        <div class="nav-links">
+      <span id="nav-auth" class="hidden">
+        <a href="/login.html" class="nav-pill">sign in</a>
+      </span>
+            <span id="nav-user" class="hidden" style="display:flex;gap:8px;align-items:center;">
+        <span class="role-badge" id="nav-role"></span>
+        <span id="nav-username" style="font-family:var(--font-mono);font-size:.8rem;color:var(--text-soft);"></span>
+        <a href="/owner.html" id="nav-dashboard" style="font-family:var(--font-mono);font-size:.8rem;">dashboard</a>
+        <a href="/employee.html" style="font-family:var(--font-mono);font-size:.8rem;color:var(--text-muted);">employee view</a>
+        <button type="button" id="nav-logout">sign out</button>
+      </span>
+        </div>
+    </nav>
+
+    <!-- Skeleton -->
+    <div id="state-loading" class="dash-layout">
+        <div style="display:flex;gap:16px;align-items:center;margin-bottom:40px;padding-bottom:32px;border-bottom:1px solid var(--ink-border);">
+            <div class="skeleton" style="width:60px;height:60px;border-radius:50%;flex-shrink:0;"></div>
+            <div style="flex:1;">
+                <div class="skeleton skeleton-line" style="width:200px;height:20px;"></div>
+                <div class="skeleton skeleton-line" style="width:120px;height:12px;margin-top:8px;"></div>
+            </div>
+        </div>
+        <div class="stat-grid">
+            <div class="skeleton" style="height:90px;border-radius:14px;"></div>
+            <div class="skeleton" style="height:90px;border-radius:14px;"></div>
+            <div class="skeleton" style="height:90px;border-radius:14px;"></div>
+        </div>
+        <div class="skeleton" style="height:200px;border-radius:14px;"></div>
+    </div>
+
+    <!-- Dashboard -->
+    <main id="state-dash" class="dash-layout hidden">
+
+        <div class="dash-header fade-up">
+            <div class="dash-avatar" id="dash-avatar"></div>
+            <div class="dash-welcome">
+                <div class="dash-welcome-name">owner view &#x2014; <em id="dash-name"></em></div>
+                <div class="dash-welcome-sub" id="dash-sub">full business overview</div>
+            </div>
+        </div>
+
+        <div class="dash-section-label fade-up">business stats</div>
+        <div class="stat-grid fade-up d1">
+            <div class="stat-card">
+                <div class="stat-card-value" id="stat-users">-</div>
+                <div class="stat-card-label">total users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-value" id="stat-promos">-</div>
+                <div class="stat-card-label">active promotions</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-value" id="stat-employees">-</div>
+                <div class="stat-card-label">employees online</div>
+            </div>
+        </div>
+
+        <div class="dash-section-label fade-up d2">manage</div>
+        <div class="content-grid fade-up d2">
+            <div class="content-card">
+                <span class="content-card-icon">&#x1F465;</span>
+                <div class="content-card-title">user management</div>
+                <div class="content-card-body">View all users, manage roles, and deactivate accounts.</div>
+                <span class="content-card-tag">coming soon</span>
+            </div>
+            <div class="content-card">
+                <span class="content-card-icon">&#x1F4CA;</span>
+                <div class="content-card-title">revenue &amp; orders</div>
+                <div class="content-card-body">Full order history, revenue breakdown, and CSV export for accounting.</div>
+                <span class="content-card-tag">coming soon</span>
+            </div>
+            <div class="content-card">
+                <span class="content-card-icon">&#x1F3F7;&#xFE0F;</span>
+                <div class="content-card-title">promotions</div>
+                <div class="content-card-body">Create, edit, and schedule promotions and employee incentives.</div>
+                <span class="content-card-tag">coming soon</span>
+            </div>
+            <div class="content-card">
+                <span class="content-card-icon">&#x2699;&#xFE0F;</span>
+                <div class="content-card-title">system settings</div>
+                <div class="content-card-body">Business hours, delivery zones, pricing, and cookie customisation.</div>
+                <span class="content-card-tag">coming soon</span>
+            </div>
+        </div>
+
+        <div class="dash-section-label fade-up d3">role management</div>
+        <div class="fade-up d3" style="background:var(--ink-card);border:1px solid var(--role-border,var(--ink-border));border-radius:var(--radius);padding:28px;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--role,#7c3aed);opacity:.5;"></div>
+            <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--text);margin-bottom:6px;">promote a user to employee</div>
+            <div style="font-size:.875rem;color:var(--text-soft);margin-bottom:20px;">
+                New hires register as customers. Use this to grant employee access.
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <input id="promote-input" type="text" placeholder="username or email..."
+                       style="flex:1;min-width:200px;padding:12px 14px;background:var(--ink-soft);border:1.5px solid var(--ink-border);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:.9rem;color:var(--text);outline:none;"/>
+                <button type="button" class="btn btn-primary" style="width:auto;padding:12px 22px;" id="promote-btn">
+                    promote to employee
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="footer">&#169; 2025 cookiegram &middot; owner portal</footer>
+</div>
+
+<script src="/app.js"></script>
+<script>
+    (async function() {
+      var user = await requireAuth('OWNER');
+      if (!user) return;
+
+      hydrateNav(user);
+
+      document.getElementById('state-loading').classList.add('hidden');
+      document.getElementById('state-dash').classList.remove('hidden');
+
+      document.getElementById('dash-avatar').textContent = user.username.charAt(0).toUpperCase();
+      document.getElementById('dash-name').textContent   = user.username;
+      document.getElementById('dash-sub').textContent    = user.email;
+
+      document.getElementById('promote-btn').addEventListener('click', function() {
+        toast.info('coming soon', 'role promotion will be wired to the backend shortly');
+      });
+
+      var promoteInput = document.getElementById('promote-input');
+      promoteInput.addEventListener('focus', function() { this.style.borderColor = 'var(--role, #7c3aed)'; });
+      promoteInput.addEventListener('blur',  function() { this.style.borderColor = 'var(--ink-border)'; });
+
+      /* Load owner stats */
+      try {
+        var data  = await apiFetch('/api/owner/dashboard');
+        var stats = (data && data.stats) ? data.stats : {};
+        document.getElementById('stat-users').textContent     = (stats.totalUsers     != null) ? stats.totalUsers     : '-';
+        document.getElementById('stat-promos').textContent    = (stats.activePromotions != null) ? stats.activePromotions : '-';
+        document.getElementById('stat-employees').textContent = (stats.employeesOnline  != null) ? stats.employeesOnline  : '-';
+      } catch (err) {
+        ['stat-users', 'stat-promos', 'stat-employees'].forEach(function(id) {
+          var el = document.getElementById(id);
+          el.textContent = '!';
+          el.style.color = 'var(--error)';
+        });
+        toast.error('could not load stats', err.message);
+      }
+    }());
+</script>
+</body>
+</html>
