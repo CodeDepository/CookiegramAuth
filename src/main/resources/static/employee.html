@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Employee Dashboard – Cookiegram</title>
+    <title>Employee Dashboard - Cookiegram</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
     <link rel="stylesheet" href="/styles.css"/>
@@ -11,21 +11,24 @@
 <body>
 <div class="page-wrapper">
 
-    <!-- Nav -->
     <nav class="nav">
-        <a href="/employee.html" class="nav-brand"><span class="cookie-dot" style="background:var(--role,#1a6fb8);box-shadow:0 0 8px rgba(26,111,184,.4);"></span>cookiegram</a>
+        <a href="/employee.html" class="nav-brand">
+            <span class="cookie-dot"></span>cookiegram
+        </a>
         <div class="nav-links">
-            <span id="nav-auth"><a href="/login.html" class="nav-pill">sign in</a></span>
+            <span id="nav-auth" class="hidden">
+                <a href="/login.html" class="nav-pill">sign in</a>
+            </span>
             <span id="nav-user" class="hidden" style="display:flex;gap:8px;align-items:center;">
-        <span class="role-badge" id="nav-role"></span>
-        <span id="nav-username" style="font-family:var(--font-mono);font-size:.8rem;color:var(--text-soft);"></span>
-        <a href="/employee.html" id="nav-dashboard" style="font-family:var(--font-mono);font-size:.8rem;">dashboard</a>
-        <button id="nav-logout">sign out</button>
-      </span>
+                <span class="role-badge" id="nav-role"></span>
+                <span id="nav-username" style="font-family:var(--font-mono);font-size:.8rem;color:var(--text-soft);"></span>
+                <a href="/employee.html" id="nav-dashboard" style="font-family:var(--font-mono);font-size:.8rem;">dashboard</a>
+                <button type="button" id="nav-logout">sign out</button>
+            </span>
         </div>
     </nav>
 
-    <!-- Loading -->
+    <!-- Skeleton while loading -->
     <div id="state-loading" class="dash-layout">
         <div style="display:flex;gap:16px;align-items:center;margin-bottom:40px;padding-bottom:32px;border-bottom:1px solid var(--ink-border);">
             <div class="skeleton" style="width:60px;height:60px;border-radius:50%;flex-shrink:0;"></div>
@@ -34,121 +37,118 @@
                 <div class="skeleton skeleton-line" style="width:120px;height:12px;margin-top:8px;"></div>
             </div>
         </div>
+        <div class="stat-grid">
+            <div class="skeleton" style="height:90px;border-radius:14px;"></div>
+            <div class="skeleton" style="height:90px;border-radius:14px;"></div>
+            <div class="skeleton" style="height:90px;border-radius:14px;"></div>
+        </div>
         <div class="skeleton" style="height:200px;border-radius:14px;margin-bottom:16px;"></div>
         <div class="skeleton" style="height:140px;border-radius:14px;"></div>
     </div>
 
-    <!-- Access denied -->
-    <div id="state-denied" class="access-denied hidden">
-        <div class="access-denied-code">403</div>
-        <h2 class="access-denied-title">not authorized.</h2>
-        <p class="access-denied-sub">this page is for employees only. redirecting you now.</p>
-        <a href="/" class="btn btn-ghost" style="width:auto;padding:12px 28px;">go home</a>
-    </div>
-
-    <!-- Dashboard -->
+    <!-- Dashboard (hidden until auth resolves) -->
     <main id="state-dash" class="dash-layout hidden">
 
-        <!-- Header -->
         <div class="dash-header fade-up">
             <div class="dash-avatar" id="dash-avatar"></div>
             <div class="dash-welcome">
-                <div class="dash-welcome-name"><em id="dash-name"></em> — on shift 👷</div>
+                <div class="dash-welcome-name"><em id="dash-name"></em> &#x2014; on shift &#x1F477;</div>
                 <div class="dash-welcome-sub" id="dash-sub">employee portal</div>
             </div>
         </div>
 
-        <!-- Stats -->
         <div class="dash-section-label fade-up">shift overview</div>
         <div class="stat-grid fade-up d1">
             <div class="stat-card">
-                <div class="stat-card-value" id="task-count">–</div>
+                <div class="stat-card-value" id="task-count">-</div>
                 <div class="stat-card-label">tasks today</div>
             </div>
             <div class="stat-card">
-                <div class="stat-card-value">✓</div>
+                <div class="stat-card-value">&#x2713;</div>
                 <div class="stat-card-label">session active</div>
             </div>
             <div class="stat-card">
-                <div class="stat-card-value">🍫</div>
-                <div class="stat-card-label">product: choc chip</div>
+                <div class="stat-card-value">&#x1F36B;</div>
+                <div class="stat-card-label">choc chip cookies</div>
             </div>
         </div>
 
-        <!-- Task list -->
         <div class="dash-section-label fade-up d2">today's tasks</div>
-        <div id="task-list" class="task-list fade-up d2">
-            <!-- populated by JS -->
-        </div>
+        <div id="task-list" class="task-list fade-up d2"></div>
 
-        <!-- Quick actions -->
         <div class="dash-section-label fade-up d3">quick actions</div>
         <div class="content-grid fade-up d3">
             <div class="content-card">
-                <span class="content-card-icon">📦</span>
+                <span class="content-card-icon">&#x1F4E6;</span>
                 <div class="content-card-title">manage orders</div>
-                <div class="content-card-body">View and process incoming cookie orders, update statuses, and handle delivery tracking.</div>
+                <div class="content-card-body">View and process incoming orders, update statuses, and handle delivery tracking.</div>
                 <span class="content-card-tag">coming soon</span>
             </div>
             <div class="content-card">
-                <span class="content-card-icon">🏷️</span>
+                <span class="content-card-icon">&#x1F3F7;&#xFE0F;</span>
                 <div class="content-card-title">update promotions</div>
-                <div class="content-card-body">Edit active promotions, set discount codes, and schedule upcoming deals for customers.</div>
+                <div class="content-card-body">Edit active promotions, set discount codes, and schedule upcoming deals.</div>
                 <span class="content-card-tag">coming soon</span>
             </div>
             <div class="content-card">
-                <span class="content-card-icon">💬</span>
+                <span class="content-card-icon">&#x1F4AC;</span>
                 <div class="content-card-title">customer issues</div>
-                <div class="content-card-body">Respond to customer complaints, manage refunds, and escalate to ownership when needed.</div>
+                <div class="content-card-body">Respond to complaints, manage refunds, escalate to ownership when needed.</div>
                 <span class="content-card-tag">coming soon</span>
             </div>
         </div>
 
     </main>
 
-    <footer class="footer">© 2025 cookiegram · employee portal</footer>
+    <footer class="footer">&#169; 2025 cookiegram &middot; employee portal</footer>
 </div>
 
 <script src="/app.js"></script>
 <script>
-    (async () => {
-      // EMPLOYEE or OWNER can access (matches backend RoleChecker.requireRole(user, "EMPLOYEE", "OWNER"))
-      const user = await checkAuth();
-      if (!user) { window.location.href = '/login.html'; return; }
-      if (user.role !== 'EMPLOYEE' && user.role !== 'OWNER') {
-        window.location.href = ROLE_HOME[user.role] || '/';
-        return;
-      }
-      document.body.classList.add('role-employee');
-      await hydrateNav();
+    (async function() {
+        /* requireAuth handles redirect if not logged in or wrong role */
+        var user = await requireAuth('EMPLOYEE');
+        if (!user) return;
 
-      document.getElementById('state-loading').classList.add('hidden');
-      document.getElementById('state-dash').classList.remove('hidden');
+        /* Pass user directly - no second network call */
+        hydrateNav(user);
 
-      document.getElementById('dash-avatar').textContent = user.username.charAt(0).toUpperCase();
-      document.getElementById('dash-name').textContent   = user.username;
-      document.getElementById('dash-sub').textContent    = `${user.email} · ${user.role.toLowerCase()}`;
+        document.getElementById('state-loading').classList.add('hidden');
+        document.getElementById('state-dash').classList.remove('hidden');
 
-      // Load employee data
-      try {
-        const data = await apiFetch('/api/employee/dashboard');
-        const tasks = data.tasks || [];
+        document.getElementById('dash-avatar').textContent = user.username.charAt(0).toUpperCase();
+        document.getElementById('dash-name').textContent   = user.username;
+        document.getElementById('dash-sub').textContent    = user.email;
 
-        document.getElementById('task-count').textContent = tasks.length;
+        /* Load tasks from backend */
+        try {
+            var data  = await apiFetch('/api/employee/dashboard');
+            var tasks = (data && data.tasks) ? data.tasks : [];
 
-        const list = document.getElementById('task-list');
-        list.innerHTML = tasks.map(t => `
-          <div class="task-item">
-            <div class="task-dot"></div>
-            <div class="task-text">${esc(t)}</div>
-          </div>
-        `).join('');
+            document.getElementById('task-count').textContent = tasks.length;
 
-      } catch (err) {
-        document.getElementById('task-list').innerHTML =
-          `<div class="task-item"><div class="task-text" style="color:var(--error);">could not load tasks — ${esc(err.message)}</div></div>`;
-      }
-    })();
+            var list = document.getElementById('task-list');
+            if (tasks.length === 0) {
+                list.innerHTML =
+                    '<div class="task-item">' +
+                    '<div class="task-text" style="color:var(--text-muted);">no tasks assigned yet</div>' +
+                    '</div>';
+            } else {
+                var html = '';
+                for (var i = 0; i < tasks.length; i++) {
+                    html +=
+                        '<div class="task-item">' +
+                        '<div class="task-dot"></div>' +
+                        '<div class="task-text">' + esc(tasks[i]) + '</div>' +
+                        '</div>';
+                }
+                list.innerHTML = html;
+            }
+        } catch (err) {
+            document.getElementById('task-list').innerHTML =
+                '<div class="task-item"><div class="task-text" style="color:var(--error);">could not load tasks - ' + esc(err.message) + '</div></div>';
+        }
+    }());
 </script>
 </body>
 </html>

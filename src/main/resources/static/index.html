@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Cookiegram – Custom Chocolate Chip Cookies</title>
+    <title>Cookiegram</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
     <link rel="stylesheet" href="/styles.css"/>
@@ -12,7 +12,7 @@
 <div class="page-wrapper">
 
     <nav class="nav">
-        <a href="/" class="nav-brand">
+        <a href="/index.html" class="nav-brand">
             <span class="cookie-dot"></span>cookiegram
         </a>
         <div class="nav-links">
@@ -20,61 +20,51 @@
         <a href="/login.html">sign in</a>
         <a href="/register.html" class="nav-pill">order now</a>
       </span>
-            <span id="nav-user" class="hidden" style="display:flex;gap:6px;align-items:center;">
+            <span id="nav-user" class="hidden" style="display:flex;gap:8px;align-items:center;">
+        <span class="role-badge" id="nav-role"></span>
         <span id="nav-username" style="font-family:var(--font-mono);font-size:.8rem;color:var(--text-soft);"></span>
-        <a href="/account.html">account</a>
-        <button id="nav-logout">sign out</button>
+        <a href="#" id="nav-dashboard" style="font-family:var(--font-mono);font-size:.8rem;">my dashboard</a>
+        <button type="button" id="nav-logout">sign out</button>
       </span>
         </div>
     </nav>
 
-    <!-- Logged-out home -->
-    <div id="home-guest" class="home-center">
-        <div class="home-cookie">🍪</div>
-        <h1 class="home-title fade-up">
-            cookies with a<br/><em>personal touch.</em>
-        </h1>
+    <div class="home-center">
+        <div class="home-cookie">&#x1F36A;</div>
+        <h1 class="home-title fade-up">cookies with a<br/><em>personal touch.</em></h1>
         <p class="home-sub fade-up d1">
-            Warm chocolate chip cookies, baked fresh, delivered with
-            your custom message. One flavour. Endless occasions.
+            Warm chocolate chip cookies, baked fresh,
+            delivered with your custom message.
+            One flavour. Endless occasions.
         </p>
-        <div class="home-actions fade-up d2">
+        <div class="home-actions fade-up d2" id="guest-actions">
             <a href="/register.html" class="btn btn-primary btn-big">place an order</a>
             <a href="/login.html"    class="btn btn-ghost   btn-big">sign in</a>
         </div>
-    </div>
-
-    <!-- Logged-in dashboard -->
-    <div id="home-auth" class="home-center hidden">
-        <div class="dashboard-card fade-up">
-            <div class="welcome-avatar" id="dash-avatar"></div>
-            <div class="welcome-name"   id="dash-name"></div>
-            <div class="welcome-msg">you're signed in &amp; ready to order 🍪</div>
-
-            <div class="order-teaser">
-                <strong>🍫 chocolate chip cookie</strong>
-                freshly baked · custom message · delivered to your door
-            </div>
-
-            <a href="#" class="btn btn-primary" style="margin-bottom:10px;">place an order</a>
-            <a href="/account.html" class="btn btn-ghost">view account</a>
+        <div class="home-actions fade-up d2 hidden" id="auth-actions">
+            <a href="#" id="go-dashboard" class="btn btn-primary btn-big">go to my dashboard</a>
         </div>
     </div>
 
-    <footer class="footer">© 2025 cookiegram · one cookie, infinite messages</footer>
+    <footer class="footer">&#169; 2025 cookiegram &middot; one cookie, infinite messages</footer>
 </div>
 
 <script src="/app.js"></script>
 <script>
-    (async () => {
-      const user = await hydrateNav();
+    (async function() {
+      var user = await checkAuth();
       if (user) {
-        document.getElementById('home-guest').classList.add('hidden');
-        document.getElementById('home-auth').classList.remove('hidden');
-        document.getElementById('dash-avatar').textContent = user.username.charAt(0).toUpperCase();
-        document.getElementById('dash-name').textContent   = user.username;
+        /* Logged in: show personalised nav + dashboard button */
+        hydrateNav(user);
+        document.getElementById('guest-actions').classList.add('hidden');
+        document.getElementById('auth-actions').classList.remove('hidden');
+        var goDash = document.getElementById('go-dashboard');
+        goDash.href = ROLE_HOME[user.role] || '/login.html';
+      } else {
+        /* Guest: show plain nav */
+        hydrateNav(null);
       }
-    })();
+    }());
 </script>
 </body>
 </html>
