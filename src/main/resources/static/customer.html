@@ -442,6 +442,23 @@
                 <textarea id="cookie-msg" class="form-input" rows="2" placeholder="e.g. Happy Birthday!" style="resize:vertical;min-height:60px;"></textarea>
             </div>
 
+            <div class="form-row">
+                <label class="form-label">delivery address</label>
+                <input type="text" id="addr-street" class="form-input" placeholder="Street address" style="margin-bottom:8px;" />
+                <div style="display:flex;gap:8px;">
+                    <input type="text" id="addr-city" class="form-input" placeholder="City" style="flex:1;" />
+                    <select id="addr-province" class="form-input" style="flex:1;">
+                        <option value="">Province</option>
+                        <option>AB</option><option>BC</option><option>MB</option>
+                        <option>NB</option><option>NL</option><option>NS</option>
+                        <option>NT</option><option>NU</option><option>ON</option>
+                        <option>PE</option><option>QC</option><option>SK</option>
+                        <option>YT</option>
+                    </select>
+                    <input type="text" id="addr-postal" class="form-input" placeholder="Postal code" style="flex:1;" maxlength="7" />
+                </div>
+            </div>
+
             <button class="btn btn-primary" id="btn-to-payment">continue to payment <span class="ms">arrow_forward</span></button>
         </div>
 
@@ -650,6 +667,7 @@
                             '<div class="order-meta">deliver: ' + o.deliveryDate +
                                 (o.message ? ' &middot; &ldquo;' + esc(o.message) + '&rdquo;' : '') +
                             '</div>' +
+                            (o.streetAddress ? '<div class="order-meta" style="font-size:.75rem;">' + esc(o.streetAddress) + ', ' + esc(o.city) + ', ' + esc(o.province) + ' ' + esc(o.postalCode) + '</div>' : '') +
                         '</div>' +
                         statusHtml +
                     '</div>' +
@@ -711,6 +729,10 @@
         document.getElementById('qty-display').textContent = quantity;
         document.getElementById('qty-total').textContent   = '$' + (PRICE * quantity).toFixed(2);
         document.getElementById('cookie-msg').value        = preMsg || '';
+        document.getElementById('addr-street').value       = '';
+        document.getElementById('addr-city').value         = '';
+        document.getElementById('addr-province').value     = '';
+        document.getElementById('addr-postal').value       = '';
         document.getElementById('pp-email-input').value    = '';
         showStep('details');
         document.getElementById('order-modal').classList.add('open');
@@ -851,6 +873,10 @@
     /* ── step 1 → 2 ───────────────────────────────── */
     document.getElementById('btn-to-payment').addEventListener('click', function() {
         if (!selectedDate) { toast.error('pick a date', 'Please select a delivery date'); return; }
+        if (!document.getElementById('addr-street').value.trim())  { toast.error('address required', 'Please enter a street address'); return; }
+        if (!document.getElementById('addr-city').value.trim())    { toast.error('address required', 'Please enter a city'); return; }
+        if (!document.getElementById('addr-province').value)       { toast.error('address required', 'Please select a province'); return; }
+        if (!document.getElementById('addr-postal').value.trim())  { toast.error('address required', 'Please enter a postal code'); return; }
         var total = (PRICE * quantity).toFixed(2);
         document.getElementById('payment-total').textContent  = '$' + total;
         document.getElementById('payment-detail').innerHTML   = quantity + ' cookie' + (quantity > 1 ? 's' : '') + ' &times; $' + PRICE.toFixed(2);
@@ -903,19 +929,28 @@
             var amount = parseFloat((PRICE * quantity).toFixed(2));
             var created  = await apiFetch('/api/payment/create-order',  { method: 'POST', body: { amount: amount } });
             var captured = await apiFetch('/api/payment/capture-order', { method: 'POST', body: { orderID: created.orderID } });
-            var msg = document.getElementById('cookie-msg').value.trim();
+            var msg    = document.getElementById('cookie-msg').value.trim();
+            var street = document.getElementById('addr-street').value.trim();
+            var city   = document.getElementById('addr-city').value.trim();
+            var prov   = document.getElementById('addr-province').value;
+            var postal = document.getElementById('addr-postal').value.trim();
             var order = await apiFetch('/api/orders', {
                 method: 'POST',
                 body: {
                     deliveryDate:    selectedDate,
                     quantity:        quantity,
                     message:         msg || null,
+                    streetAddress:   street,
+                    city:            city,
+                    province:        prov,
+                    postalCode:      postal,
                     paymentIntentId: captured.orderID
                 }
             });
             document.getElementById('confirm-detail').innerHTML =
                 quantity + ' cookie' + (quantity > 1 ? 's' : '') +
                 ' arriving on <strong>' + order.deliveryDate + '</strong><br>' +
+                'delivering to <strong>' + esc(order.streetAddress) + ', ' + esc(order.city) + ', ' + esc(order.province) + ' ' + esc(order.postalCode) + '</strong><br>' +
                 'confirmation <strong>#' + order.id + '</strong><br>' +
                 '<span style="color:var(--text-muted);font-size:.8rem;">payment confirmed via PayPal (' + esc(ppEmail) + ')</span>';
             showStep('confirm');

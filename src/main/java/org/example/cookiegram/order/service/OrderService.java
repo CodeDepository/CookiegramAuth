@@ -73,7 +73,8 @@ public class OrderService {
         BigDecimal total = PRICE_PER_COOKIE.multiply(BigDecimal.valueOf(req.quantity));
 
         Order order = new Order(customer, req.quantity, req.deliveryDate,
-                req.message, req.paymentIntentId, total);
+                req.message, req.streetAddress, req.city, req.province,
+                req.postalCode, req.paymentIntentId, total);
         orders.save(order);
 
         sendOrderConfirmationEmail(customer, order);
