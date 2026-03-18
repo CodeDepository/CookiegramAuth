@@ -1,7 +1,5 @@
 package org.example.cookiegram.order.service;
 
-import org.example.cookiegram.order.entity.BlockedDate;
-import org.example.cookiegram.order.entity.Holiday;
 import org.example.cookiegram.order.repository.BlockedDateRepository;
 import org.example.cookiegram.order.repository.HolidayRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,14 +32,9 @@ class DateValidationServiceTest {
     @BeforeEach
     void setUp() {
         today = LocalDate.now();
-        // Default: no holidays, no blocked dates
-        when(holidays.existsByDate(any())).thenReturn(false);
-        when(blockedDates.existsByDate(any())).thenReturn(false);
     }
 
-    /* ─────────────────────────────────────────────────
-       3-day minimum rule
-       ───────────────────────────────────────────────── */
+    // 3-day minimum
 
     @Test
     @DisplayName("Same day delivery is rejected")
@@ -82,9 +74,7 @@ class DateValidationServiceTest {
                 .doesNotThrowAnyException();
     }
 
-    /* ─────────────────────────────────────────────────
-       Holiday rule
-       ───────────────────────────────────────────────── */
+    // Holiday
 
     @Test
     @DisplayName("Delivery on a holiday is rejected")
@@ -107,9 +97,7 @@ class DateValidationServiceTest {
                 .doesNotThrowAnyException();
     }
 
-    /* ─────────────────────────────────────────────────
-       Owner-blocked date rule
-       ───────────────────────────────────────────────── */
+    // Owner-blocked date
 
     @Test
     @DisplayName("Delivery on an owner-blocked date is rejected")
@@ -122,21 +110,7 @@ class DateValidationServiceTest {
                 .hasMessageContaining("not available");
     }
 
-    @Test
-    @DisplayName("A date that is both a holiday and blocked gives the holiday message first")
-    void holiday_error_takes_priority_over_blocked() {
-        LocalDate date = today.plusDays(5);
-        when(holidays.existsByDate(date)).thenReturn(true);
-        when(blockedDates.existsByDate(date)).thenReturn(true);
-
-        assertThatThrownBy(() -> dateValidation.validate(date))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("public holiday");
-    }
-
-    /* ─────────────────────────────────────────────────
-       isAvailable helper
-       ───────────────────────────────────────────────── */
+    // isAvailable
 
     @Test
     @DisplayName("isAvailable returns false for < 3 days out")

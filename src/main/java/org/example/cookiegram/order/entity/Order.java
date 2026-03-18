@@ -28,6 +28,18 @@ public class Order {
     @Column(length = 500)
     private String message;
 
+    @Column(length = 200)
+    private String streetAddress;
+
+    @Column(length = 100)
+    private String city;
+
+    @Column(length = 50)
+    private String province;
+
+    @Column(length = 10)
+    private String postalCode;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private OrderStatus status = OrderStatus.CONFIRMED;
@@ -45,11 +57,16 @@ public class Order {
     public Order() {}
 
     public Order(User customer, int quantity, LocalDate deliveryDate,
-                 String message, String paymentIntentId, BigDecimal totalAmount) {
+                 String message, String streetAddress, String city, String province,
+                 String postalCode, String paymentIntentId, BigDecimal totalAmount) {
         this.customer = customer;
         this.quantity = quantity;
         this.deliveryDate = deliveryDate;
         this.message = message;
+        this.streetAddress = streetAddress;
+        this.city = city;
+        this.province = province;
+        this.postalCode = postalCode;
         this.paymentIntentId = paymentIntentId;
         this.totalAmount = totalAmount;
     }
@@ -59,6 +76,10 @@ public class Order {
     public int getQuantity() { return quantity; }
     public LocalDate getDeliveryDate() { return deliveryDate; }
     public String getMessage() { return message; }
+    public String getStreetAddress() { return streetAddress; }
+    public String getCity() { return city; }
+    public String getProvince() { return province; }
+    public String getPostalCode() { return postalCode; }
     public OrderStatus getStatus() { return status; }
     public String getPaymentIntentId() { return paymentIntentId; }
     public BigDecimal getTotalAmount() { return totalAmount; }

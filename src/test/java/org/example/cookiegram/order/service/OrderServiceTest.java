@@ -49,9 +49,7 @@ class OrderServiceTest {
         mockCustomer = new User("alice", "alice@example.com", "hashed", UserRole.CUSTOMER);
     }
 
-    /* ─────────────────────────────────────────────────
-       placeOrder — success path
-       ───────────────────────────────────────────────── */
+    // placeOrder - success path
 
     @Test
     @DisplayName("Places an order when date is valid and payment succeeded")
@@ -77,7 +75,7 @@ class OrderServiceTest {
         assertThat(response.message).isEqualTo("Happy Birthday!");
         assertThat(response.status).isEqualTo(OrderStatus.CONFIRMED);
         assertThat(response.totalAmount)
-                .isEqualByComparingTo(new BigDecimal("11.98")); // 2 × $5.99
+                .isEqualByComparingTo(new BigDecimal("11.98")); // 2 x $5.99
 
         verify(orders).save(any(Order.class));
     }
@@ -118,9 +116,7 @@ class OrderServiceTest {
         assertThat(response.totalAmount).isEqualByComparingTo(new BigDecimal("59.90"));
     }
 
-    /* ─────────────────────────────────────────────────
-       placeOrder — payment failure paths
-       ───────────────────────────────────────────────── */
+    // placeOrder - payment failure paths
 
     @Test
     @DisplayName("Order is rejected when payment has not succeeded")
@@ -159,9 +155,7 @@ class OrderServiceTest {
         verify(orders, never()).save(any());
     }
 
-    /* ─────────────────────────────────────────────────
-       placeOrder — date validation failure
-       ───────────────────────────────────────────────── */
+    // placeOrder - date validation failure
 
     @Test
     @DisplayName("Order is rejected when date validation fails")
@@ -178,20 +172,18 @@ class OrderServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("at least 3 days");
 
-        // Payment should never be verified — date check comes first
+        // Payment should never be verified - date check comes first
         verify(paymentService, never()).verifySucceeded(any());
         verify(orders, never()).save(any());
     }
 
-    /* ─────────────────────────────────────────────────
-       status update
-       ───────────────────────────────────────────────── */
+    // status update
 
     @Test
     @DisplayName("updateStatus changes the order status and saves")
     void updates_order_status() {
         Order order = new Order(mockCustomer, 1, LocalDate.now().plusDays(5),
-                null, "pi_test", new BigDecimal("5.99"));
+                null, "123 Main St", "Toronto", "ON", "M5V 1A1", "pi_test", new BigDecimal("5.99"));
 
         when(orders.findById(42L)).thenReturn(Optional.of(order));
         when(orders.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -212,9 +204,7 @@ class OrderServiceTest {
                 .hasMessageContaining("Order not found");
     }
 
-    /* ─────────────────────────────────────────────────
-       getMyOrders
-       ───────────────────────────────────────────────── */
+    // getMyOrders
 
     @Test
     @DisplayName("getMyOrders returns empty list when customer has no orders")

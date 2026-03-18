@@ -14,6 +14,10 @@ public class OrderResponse {
     public int quantity;
     public LocalDate deliveryDate;
     public String message;
+    public String streetAddress;
+    public String city;
+    public String province;
+    public String postalCode;
     public OrderStatus status;
     public BigDecimal totalAmount;
     public Instant createdAt;
@@ -25,6 +29,10 @@ public class OrderResponse {
         r.quantity = o.getQuantity();
         r.deliveryDate = o.getDeliveryDate();
         r.message = o.getMessage();
+        r.streetAddress = o.getStreetAddress();
+        r.city = o.getCity();
+        r.province = o.getProvince();
+        r.postalCode = o.getPostalCode();
         r.status = o.getStatus();
         r.totalAmount = o.getTotalAmount();
         r.createdAt = o.getCreatedAt();

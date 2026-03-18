@@ -2,7 +2,6 @@ package org.example.cookiegram.payment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
-import org.example.cookiegram.auth.security.AuthFilter;
 import org.example.cookiegram.auth.security.AuthenticatedUser;
 import org.example.cookiegram.auth.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +29,7 @@ class PaymentControllerTest {
     @Autowired ObjectMapper objectMapper;
 
     @MockBean PaymentService paymentService;
-    /** AuthFilter is included in @WebMvcTest — mock its AuthService dependency */
+    // AuthFilter is included in @WebMvcTest - mock its AuthService dependency
     @MockBean AuthService authService;
 
     private static final String TOKEN    = "test-session-token";
@@ -42,9 +41,7 @@ class PaymentControllerTest {
         when(authService.requireUserByToken(TOKEN)).thenReturn(CUSTOMER);
     }
 
-    /* ─────────────────────────────────────────────────
-       GET /api/payment/config
-       ───────────────────────────────────────────────── */
+    // GET /api/payment/config
 
     @Test
     @DisplayName("GET /config returns clientId and configured=true")
@@ -78,9 +75,7 @@ class PaymentControllerTest {
                 .andExpect(status().isUnauthorized());
     }
 
-    /* ─────────────────────────────────────────────────
-       POST /api/payment/create-order
-       ───────────────────────────────────────────────── */
+    // POST /api/payment/create-order
 
     @Test
     @DisplayName("POST /create-order returns PayPal orderID for valid amount")
@@ -152,9 +147,7 @@ class PaymentControllerTest {
                 .andExpect(status().isUnauthorized());
     }
 
-    /* ─────────────────────────────────────────────────
-       POST /api/payment/capture-order
-       ───────────────────────────────────────────────── */
+    // POST /api/payment/capture-order
 
     @Test
     @DisplayName("POST /capture-order returns orderID and COMPLETED status")
@@ -186,7 +179,7 @@ class PaymentControllerTest {
     @DisplayName("POST /capture-order returns 400 when PayPal capture fails")
     void capture_order_handles_failure() throws Exception {
         when(paymentService.captureOrder(any()))
-                .thenThrow(new IOException("capture failed — status: DECLINED"));
+                .thenThrow(new IOException("capture failed - status: DECLINED"));
 
         mockMvc.perform(post("/api/payment/capture-order")
                         .cookie(new Cookie("CG_SESSION", TOKEN))
