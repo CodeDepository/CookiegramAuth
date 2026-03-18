@@ -4,6 +4,7 @@ import java.io.IOException;
 import org.example.cookiegram.auth.entity.User;
 import org.example.cookiegram.auth.repository.UserRepository;
 import org.example.cookiegram.auth.exception.UnauthorizedException;
+import org.example.cookiegram.auth.service.EmailService;
 import org.example.cookiegram.order.dto.CreateOrderRequest;
 import org.example.cookiegram.order.dto.OrderResponse;
 import org.example.cookiegram.order.entity.Order;
@@ -12,6 +13,7 @@ import org.example.cookiegram.order.repository.BlockedDateRepository;
 import org.example.cookiegram.order.repository.HolidayRepository;
 import org.example.cookiegram.order.repository.OrderRepository;
 import org.example.cookiegram.payment.PaymentService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,18 +33,24 @@ public class OrderService {
     private final HolidayRepository holidays;
     private final BlockedDateRepository blockedDates;
     private final PaymentService paymentService;
+    private final EmailService emailService;
+
+    @Value("${cookiegram.mail.from}")
+    private String mailFrom;
 
     public OrderService(OrderRepository orders, UserRepository users,
                         DateValidationService dateValidation,
                         HolidayRepository holidays,
                         BlockedDateRepository blockedDates,
-                        PaymentService paymentService) {
+                        PaymentService paymentService,
+                        EmailService emailService) {
         this.orders = orders;
         this.users = users;
         this.dateValidation = dateValidation;
         this.holidays = holidays;
         this.blockedDates = blockedDates;
         this.paymentService = paymentService;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -68,7 +76,29 @@ public class OrderService {
                 req.message, req.paymentIntentId, total);
         orders.save(order);
 
+        sendOrderConfirmationEmail(customer, order);
+
         return OrderResponse.from(order);
+    }
+
+    private void sendOrderConfirmationEmail(User customer, Order order) {
+        String subject = "Order Confirmed - Cookiegram #" + order.getId();
+        String body = "Hi " + customer.getUsername() + ",\n\n" +
+                "Your order has been confirmed! Here are your order details:\n\n" +
+                "  Order #:        " + order.getId() + "\n" +
+                "  Cookies:        " + order.getQuantity() + "\n" +
+                "  Delivery Date:  " + order.getDeliveryDate() + "\n" +
+                "  Total:          $" + order.getTotalAmount() + "\n" +
+                (order.getMessage() != null && !order.getMessage().isBlank()
+                        ? "  Message:        " + order.getMessage() + "\n"
+                        : "") +
+                "\nThank you for ordering from Cookiegram!\n";
+        try {
+            emailService.send(mailFrom, customer.getEmail(), subject, body);
+        } catch (Exception e) {
+            // Log but don't fail the order if email sending fails
+            System.err.println("Failed to send order confirmation email: " + e.getMessage());
+        }
     }
 
     @Transactional(readOnly = true)
