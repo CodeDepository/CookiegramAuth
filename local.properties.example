@@ -1,0 +1,27 @@
+# ──────────────────────────────────────────────────────────────────────────
+#  local.properties  — LOCAL CREDENTIALS FILE
+#  Copy this file to local.properties (same directory) and fill in your values.
+#  local.properties is in .gitignore and will NEVER be committed to Git.
+# ──────────────────────────────────────────────────────────────────────────
+
+# ── Database (local dev override) ─────────────────────────────────────────
+# The default path (/app/data/...) is for Docker. Override it here so the
+# database file is created inside the project folder when running locally.
+spring.datasource.url=jdbc:h2:file:./data/cookiegram;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE
+
+# ── PayPal Sandbox keys ───────────────────────────────────────────────────
+# Get these free at: https://developer.paypal.com -> Apps & Credentials -> Create App
+# Leave blank (or omit) to run in demo mode — payments will be simulated.
+paypal.client-id=YOUR_SANDBOX_CLIENT_ID_HERE
+paypal.client-secret=YOUR_SANDBOX_CLIENT_SECRET_HERE
+
+# ── Mail (optional) ───────────────────────────────────────────────────────
+# Leave all blank to disable email sending (password-reset emails won't send).
+MAIL_HOST=
+MAIL_PORT=587
+MAIL_USERNAME=
+MAIL_PASSWORD=
+
+# ── App base URL ──────────────────────────────────────────────────────────
+cookiegram.base-url=http://localhost:8080
+cookiegram.mail.from=noreply@cookiegram.local
