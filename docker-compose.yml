@@ -15,6 +15,10 @@ services:
       - MAIL_PASSWORD=
       - MAIL_SMTP_AUTH=false
       - MAIL_STARTTLS=false
+      # PayPal Sandbox — fill these in when running via Docker
+      # Get keys free at https://developer.paypal.com -> Apps & Credentials
+      - PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID:-}
+      - PAYPAL_CLIENT_SECRET=${PAYPAL_CLIENT_SECRET:-}
     depends_on:
       - mailhog
 

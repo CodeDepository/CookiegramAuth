@@ -6,7 +6,118 @@
     <title>Owner Dashboard - Cookiegram</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet"/>
     <link rel="stylesheet" href="/styles.css"/>
+    <style>
+        .ms { font-family: 'Material Symbols Outlined'; font-variation-settings: 'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 20; font-size: 1.2em; vertical-align: -0.15em; line-height: 1; display: inline-block; user-select: none; }
+        .ms-lg { font-family: 'Material Symbols Outlined'; font-variation-settings: 'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24; font-size: 2rem; display: block; line-height: 1; user-select: none; }
+        .blocked-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .blocked-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            background: var(--ink-soft);
+            border: 1px solid var(--ink-border);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+        }
+        .blocked-date-label {
+            font-family: var(--font-mono);
+            font-size: .85rem;
+            color: var(--text);
+        }
+        .blocked-reason {
+            font-size: .8rem;
+            color: var(--text-soft);
+            margin-top: 2px;
+        }
+        .unblock-btn {
+            background: none;
+            border: 1px solid var(--ink-border);
+            border-radius: var(--radius-sm);
+            color: var(--error, #f87171);
+            font-family: var(--font-mono);
+            font-size: .75rem;
+            padding: 4px 12px;
+            cursor: pointer;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+        .unblock-btn:hover { background: rgba(248,113,113,.1); }
+
+        .block-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            margin-top: 16px;
+        }
+        .block-form input[type="date"],
+        .block-form input[type="text"] {
+            flex: 1;
+            min-width: 140px;
+            padding: 11px 13px;
+            background: var(--ink-soft);
+            border: 1.5px solid var(--ink-border);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-body);
+            font-size: .9rem;
+            color: var(--text);
+            outline: none;
+            transition: border-color .15s;
+            box-sizing: border-box;
+        }
+        .block-form input:focus { border-color: var(--role, #7c3aed); }
+        /* style the date input caret in dark mode */
+        .block-form input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            opacity: .6;
+            cursor: pointer;
+        }
+        .date-hint {
+            font-family: var(--font-mono);
+            font-size: .72rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        /* Quick-action manage cards */
+        .manage-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        .manage-card {
+            background: var(--ink-card);
+            border: 1px solid var(--ink-border);
+            border-radius: var(--radius-sm);
+            padding: 20px;
+            cursor: pointer;
+            transition: box-shadow 180ms, transform 180ms, border-color 180ms;
+            text-decoration: none;
+            display: block;
+        }
+        .manage-card:hover {
+            box-shadow: 0 4px 20px rgba(26,14,8,.08);
+            transform: translateY(-2px);
+            border-color: var(--role, #7c3aed);
+        }
+        .manage-card-icon { font-size: 1.6rem; margin-bottom: 10px; display: block; }
+        .manage-card-title {
+            font-family: var(--font-display);
+            font-size: .95rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .manage-card-desc { font-size: .8rem; color: var(--text-soft); line-height: 1.5; }
+    </style>
 </head>
 <body>
 <div class="page-wrapper">
@@ -16,16 +127,16 @@
             <span class="cookie-dot"></span>cookiegram
         </a>
         <div class="nav-links">
-      <span id="nav-auth" class="hidden">
-        <a href="/login.html" class="nav-pill">sign in</a>
-      </span>
+            <span id="nav-auth" class="hidden">
+                <a href="/login.html" class="nav-pill">sign in</a>
+            </span>
             <span id="nav-user" class="hidden" style="display:flex;gap:8px;align-items:center;">
-        <span class="role-badge" id="nav-role"></span>
-        <span id="nav-username" style="font-family:var(--font-mono);font-size:.8rem;color:var(--text-soft);"></span>
-        <a href="/owner.html" id="nav-dashboard" style="font-family:var(--font-mono);font-size:.8rem;">dashboard</a>
-        <a href="/employee.html" style="font-family:var(--font-mono);font-size:.8rem;color:var(--text-muted);">employee view</a>
-        <button type="button" id="nav-logout">sign out</button>
-      </span>
+                <span class="role-badge" id="nav-role"></span>
+                <span id="nav-username" style="font-family:var(--font-mono);font-size:.8rem;color:var(--text-soft);"></span>
+                <a href="/owner.html" id="nav-dashboard" style="font-family:var(--font-mono);font-size:.8rem;">dashboard</a>
+                <a href="/employee.html" style="font-family:var(--font-mono);font-size:.8rem;color:var(--text-muted);">order view</a>
+                <button type="button" id="nav-logout">sign out</button>
+            </span>
         </div>
     </nav>
 
@@ -42,6 +153,7 @@
             <div class="skeleton" style="height:90px;border-radius:14px;"></div>
             <div class="skeleton" style="height:90px;border-radius:14px;"></div>
             <div class="skeleton" style="height:90px;border-radius:14px;"></div>
+            <div class="skeleton" style="height:90px;border-radius:14px;"></div>
         </div>
         <div class="skeleton" style="height:200px;border-radius:14px;"></div>
     </div>
@@ -52,68 +164,96 @@
         <div class="dash-header fade-up">
             <div class="dash-avatar" id="dash-avatar"></div>
             <div class="dash-welcome">
-                <div class="dash-welcome-name">owner view &#x2014; <em id="dash-name"></em></div>
+                <div class="dash-welcome-name">owner view <span style="font-family:var(--font-mono);font-size:.75rem;color:var(--text-muted);font-weight:400;">/</span> <em id="dash-name"></em></div>
                 <div class="dash-welcome-sub" id="dash-sub">full business overview</div>
             </div>
         </div>
 
+        <!-- Stats (4 cards) -->
         <div class="dash-section-label fade-up">business stats</div>
-        <div class="stat-grid fade-up d1">
+        <div class="stat-grid fade-up d1" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">
             <div class="stat-card">
                 <div class="stat-card-value" id="stat-users">-</div>
                 <div class="stat-card-label">total users</div>
             </div>
             <div class="stat-card">
-                <div class="stat-card-value" id="stat-promos">-</div>
-                <div class="stat-card-label">active promotions</div>
+                <div class="stat-card-value" id="stat-orders">-</div>
+                <div class="stat-card-label">total orders</div>
             </div>
             <div class="stat-card">
-                <div class="stat-card-value" id="stat-employees">-</div>
-                <div class="stat-card-label">employees online</div>
+                <div class="stat-card-value" id="stat-active-orders">-</div>
+                <div class="stat-card-label">active orders</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-value" id="stat-revenue">-</div>
+                <div class="stat-card-label">total revenue</div>
             </div>
         </div>
 
+        <!-- Quick manage cards -->
         <div class="dash-section-label fade-up d2">manage</div>
-        <div class="content-grid fade-up d2">
-            <div class="content-card">
-                <span class="content-card-icon">&#x1F465;</span>
-                <div class="content-card-title">user management</div>
-                <div class="content-card-body">View all users, manage roles, and deactivate accounts.</div>
-                <span class="content-card-tag">coming soon</span>
-            </div>
-            <div class="content-card">
-                <span class="content-card-icon">&#x1F4CA;</span>
-                <div class="content-card-title">revenue &amp; orders</div>
-                <div class="content-card-body">Full order history, revenue breakdown, and CSV export for accounting.</div>
-                <span class="content-card-tag">coming soon</span>
-            </div>
-            <div class="content-card">
-                <span class="content-card-icon">&#x1F3F7;&#xFE0F;</span>
-                <div class="content-card-title">promotions</div>
-                <div class="content-card-body">Create, edit, and schedule promotions and employee incentives.</div>
-                <span class="content-card-tag">coming soon</span>
-            </div>
-            <div class="content-card">
-                <span class="content-card-icon">&#x2699;&#xFE0F;</span>
-                <div class="content-card-title">system settings</div>
-                <div class="content-card-body">Business hours, delivery zones, pricing, and cookie customisation.</div>
-                <span class="content-card-tag">coming soon</span>
+        <div class="manage-grid fade-up d2">
+            <a href="/employee.html" class="manage-card">
+                <span class="manage-card-icon"><span class="ms-lg">assignment</span></span>
+                <div class="manage-card-title">view all orders</div>
+                <div class="manage-card-desc">See every order, update statuses, and track today's deliveries.</div>
+            </a>
+            <a href="#blocked-dates-section" class="manage-card" id="manage-block-link">
+                <span class="manage-card-icon"><span class="ms-lg">calendar_month</span></span>
+                <div class="manage-card-title">manage blocked dates</div>
+                <div class="manage-card-desc">Block specific dates so customers cannot schedule deliveries on those days.</div>
+            </a>
+            <a href="#role-section" class="manage-card" id="manage-role-link">
+                <span class="manage-card-icon"><span class="ms-lg">person</span></span>
+                <div class="manage-card-title">promote a user</div>
+                <div class="manage-card-desc">Grant employee access to new hires who registered as customers.</div>
+            </a>
+            <a href="#stats-section" class="manage-card" id="manage-stats-link">
+                <span class="manage-card-icon"><span class="ms-lg">bar_chart</span></span>
+                <div class="manage-card-title">business stats</div>
+                <div class="manage-card-desc">Review revenue, user counts, and order totals at a glance above.</div>
+            </a>
+        </div>
+
+        <!-- Role management -->
+        <div id="role-section">
+            <div class="dash-section-label fade-up d2">role management</div>
+            <div class="fade-up d2" style="background:var(--ink-card);border:1px solid var(--role-border,var(--ink-border));border-radius:var(--radius);padding:28px;position:relative;overflow:hidden;">
+                <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--role,#7c3aed);opacity:.5;"></div>
+                <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--text);margin-bottom:6px;">promote a user to employee</div>
+                <div style="font-size:.875rem;color:var(--text-soft);margin-bottom:20px;">
+                    New hires register as customers. Use this to grant employee access.
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <input id="promote-input" type="text" placeholder="username or email..."
+                           style="flex:1;min-width:200px;padding:12px 14px;background:var(--ink-soft);border:1.5px solid var(--ink-border);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:.9rem;color:var(--text);outline:none;"/>
+                    <button type="button" class="btn btn-primary" style="width:auto;padding:12px 22px;" id="promote-btn">
+                        promote to employee
+                    </button>
+                </div>
             </div>
         </div>
 
-        <div class="dash-section-label fade-up d3">role management</div>
-        <div class="fade-up d3" style="background:var(--ink-card);border:1px solid var(--role-border,var(--ink-border));border-radius:var(--radius);padding:28px;position:relative;overflow:hidden;">
-            <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--role,#7c3aed);opacity:.5;"></div>
-            <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--text);margin-bottom:6px;">promote a user to employee</div>
-            <div style="font-size:.875rem;color:var(--text-soft);margin-bottom:20px;">
-                New hires register as customers. Use this to grant employee access.
-            </div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <input id="promote-input" type="text" placeholder="username or email..."
-                       style="flex:1;min-width:200px;padding:12px 14px;background:var(--ink-soft);border:1.5px solid var(--ink-border);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:.9rem;color:var(--text);outline:none;"/>
-                <button type="button" class="btn btn-primary" style="width:auto;padding:12px 22px;" id="promote-btn">
-                    promote to employee
-                </button>
+        <!-- Blocked dates -->
+        <div id="blocked-dates-section">
+            <div class="dash-section-label fade-up d3">blocked delivery dates</div>
+            <div class="fade-up d3" style="background:var(--ink-card);border:1px solid var(--ink-border);border-radius:var(--radius);padding:28px;">
+                <div style="font-size:.875rem;color:var(--text-soft);margin-bottom:4px;">
+                    Block specific dates so customers cannot place orders for delivery on those days.
+                </div>
+
+                <div class="block-form">
+                    <input type="date" id="block-date-input" min="" />
+                    <input type="text" id="block-reason-input" placeholder="reason (optional, e.g. staff holiday)" style="min-width:200px;" />
+                    <button class="btn btn-primary" id="block-btn" style="width:auto;padding:11px 22px;">
+                        block date
+                    </button>
+                </div>
+                <div class="date-hint">pick any future date &middot; blocked dates are hidden from the customer date picker</div>
+
+                <div id="blocked-list" class="blocked-list">
+                    <div style="font-family:var(--font-mono);font-size:.82rem;color:var(--text-muted);">loading...</div>
+                </div>
             </div>
         </div>
 
@@ -125,42 +265,145 @@
 <script src="/app.js"></script>
 <script>
     (async function() {
-      var user = await requireAuth('OWNER');
-      if (!user) return;
+        var user = await requireAuth('OWNER');
+        if (!user) return;
 
-      hydrateNav(user);
+        hydrateNav(user);
 
-      document.getElementById('state-loading').classList.add('hidden');
-      document.getElementById('state-dash').classList.remove('hidden');
+        document.getElementById('state-loading').classList.add('hidden');
+        document.getElementById('state-dash').classList.remove('hidden');
+        document.getElementById('dash-avatar').textContent = user.username.charAt(0).toUpperCase();
+        document.getElementById('dash-name').textContent   = user.username;
+        document.getElementById('dash-sub').textContent    = user.email;
 
-      document.getElementById('dash-avatar').textContent = user.username.charAt(0).toUpperCase();
-      document.getElementById('dash-name').textContent   = user.username;
-      document.getElementById('dash-sub').textContent    = user.email;
+        /* set min date for date picker to tomorrow */
+        var tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('block-date-input').min = tomorrow.toISOString().slice(0, 10);
 
-      document.getElementById('promote-btn').addEventListener('click', function() {
-        toast.info('coming soon', 'role promotion will be wired to the backend shortly');
-      });
-
-      var promoteInput = document.getElementById('promote-input');
-      promoteInput.addEventListener('focus', function() { this.style.borderColor = 'var(--role, #7c3aed)'; });
-      promoteInput.addEventListener('blur',  function() { this.style.borderColor = 'var(--ink-border)'; });
-
-      /* Load owner stats */
-      try {
-        var data  = await apiFetch('/api/owner/dashboard');
-        var stats = (data && data.stats) ? data.stats : {};
-        document.getElementById('stat-users').textContent     = (stats.totalUsers     != null) ? stats.totalUsers     : '-';
-        document.getElementById('stat-promos').textContent    = (stats.activePromotions != null) ? stats.activePromotions : '-';
-        document.getElementById('stat-employees').textContent = (stats.employeesOnline  != null) ? stats.employeesOnline  : '-';
-      } catch (err) {
-        ['stat-users', 'stat-promos', 'stat-employees'].forEach(function(id) {
-          var el = document.getElementById(id);
-          el.textContent = '!';
-          el.style.color = 'var(--error)';
+        document.getElementById('promote-btn').addEventListener('click', function() {
+            toast.info('coming soon', 'role promotion will be wired to the backend shortly');
         });
-        toast.error('could not load stats', err.message);
-      }
+
+        var promoteInput = document.getElementById('promote-input');
+        promoteInput.addEventListener('focus', function() { this.style.borderColor = 'var(--role, #7c3aed)'; });
+        promoteInput.addEventListener('blur',  function() { this.style.borderColor = 'var(--ink-border)'; });
+
+        /* smooth scroll for manage cards */
+        document.getElementById('manage-block-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('blocked-dates-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        document.getElementById('manage-role-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('role-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        document.getElementById('manage-stats-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        loadStats();
+        loadBlockedDates();
+        initBlockForm();
     }());
+
+    /* ── stats ──────────────────────────────────────── */
+    async function loadStats() {
+        try {
+            var orders = await apiFetch('/api/orders');
+            var revenue = orders.reduce(function(sum, o) {
+                return o.status !== 'CANCELLED' ? sum + parseFloat(o.totalAmount) : sum;
+            }, 0);
+            var active = orders.filter(function(o) {
+                return o.status === 'CONFIRMED' || o.status === 'PREPARING' || o.status === 'READY';
+            }).length;
+
+            document.getElementById('stat-orders').textContent       = orders.length;
+            document.getElementById('stat-active-orders').textContent = active;
+            document.getElementById('stat-revenue').textContent      = '$' + revenue.toFixed(0);
+        } catch (err) {
+            ['stat-orders', 'stat-active-orders', 'stat-revenue'].forEach(function(id) {
+                var el = document.getElementById(id);
+                el.textContent = '!';
+                el.style.color = 'var(--error)';
+            });
+        }
+
+        /* user count from owner dashboard */
+        try {
+            var data = await apiFetch('/api/owner/dashboard');
+            document.getElementById('stat-users').textContent =
+                (data && data.stats) ? data.stats.totalUsers : '-';
+        } catch (e) {
+            document.getElementById('stat-users').textContent = '-';
+        }
+    }
+
+    /* ── blocked dates ──────────────────────────────── */
+    async function loadBlockedDates() {
+        var list = document.getElementById('blocked-list');
+        try {
+            var blocked = await apiFetch('/api/owner/blocked-dates');
+            if (blocked.length === 0) {
+                list.innerHTML = '<div style="font-family:var(--font-mono);font-size:.82rem;color:var(--text-muted);padding:8px 0;">no dates blocked — customers can order any available date</div>';
+                return;
+            }
+            list.innerHTML = blocked.map(function(b) {
+                return '<div class="blocked-item">' +
+                    '<div>' +
+                        '<div class="blocked-date-label">' + esc(b.date) + '</div>' +
+                        (b.reason ? '<div class="blocked-reason">' + esc(b.reason) + '</div>' : '') +
+                    '</div>' +
+                    '<button class="unblock-btn" data-id="' + b.id + '">unblock</button>' +
+                '</div>';
+            }).join('');
+
+            list.querySelectorAll('.unblock-btn').forEach(function(btn) {
+                btn.addEventListener('click', async function() {
+                    var id = this.dataset.id;
+                    try {
+                        await apiFetch('/api/owner/blocked-dates/' + id, { method: 'DELETE' });
+                        toast.success('unblocked', 'Date is now available for orders');
+                        loadBlockedDates();
+                    } catch (err) {
+                        toast.error('failed', err.message);
+                    }
+                });
+            });
+        } catch (err) {
+            list.innerHTML = '<div style="color:var(--error);font-family:var(--font-mono);font-size:.8rem;">could not load blocked dates</div>';
+        }
+    }
+
+    function initBlockForm() {
+        document.getElementById('block-btn').addEventListener('click', async function() {
+            var dateVal   = document.getElementById('block-date-input').value;
+            var reasonVal = document.getElementById('block-reason-input').value.trim();
+
+            if (!dateVal) {
+                toast.error('missing date', 'Please pick a date to block');
+                return;
+            }
+
+            var btn = this;
+            setLoading(btn, true);
+            try {
+                await apiFetch('/api/owner/blocked-dates', {
+                    method: 'POST',
+                    body: { date: dateVal, reason: reasonVal || null }
+                });
+                document.getElementById('block-date-input').value   = '';
+                document.getElementById('block-reason-input').value = '';
+                toast.success('date blocked', dateVal + ' will not accept orders');
+                loadBlockedDates();
+            } catch (err) {
+                toast.error('could not block date', err.message);
+            } finally {
+                setLoading(btn, false);
+            }
+        });
+    }
 </script>
 </body>
 </html>

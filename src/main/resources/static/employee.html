@@ -6,7 +6,150 @@
     <title>Employee Dashboard - Cookiegram</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet"/>
     <link rel="stylesheet" href="/styles.css"/>
+    <style>
+        .ms { font-family: 'Material Symbols Outlined'; font-variation-settings: 'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 20; font-size: 1.2em; vertical-align: -0.15em; line-height: 1; display: inline-block; user-select: none; }
+        .ms-lg { font-family: 'Material Symbols Outlined'; font-variation-settings: 'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24; font-size: 2rem; display: block; line-height: 1; user-select: none; }
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .875rem;
+        }
+        .orders-table th {
+            text-align: left;
+            font-family: var(--font-mono);
+            font-size: .72rem;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: var(--text-soft);
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--ink-border);
+            background: var(--ink-card);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        .orders-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--ink-border);
+            color: var(--text);
+            vertical-align: middle;
+        }
+        .orders-table tr:last-child td { border-bottom: none; }
+        .orders-table tr:hover td { background: var(--ink-soft); }
+        .orders-table tr.row-today td { background: rgba(245,158,11,.06); }
+        .orders-table tr.row-today:hover td { background: rgba(245,158,11,.12); }
+
+        .order-status {
+            font-family: var(--font-mono);
+            font-size: .72rem;
+            padding: 3px 10px;
+            border-radius: 99px;
+            white-space: nowrap;
+        }
+        .status-CONFIRMED  { background: #1a3350; color: #60a5fa; }
+        .status-PREPARING  { background: #2d2000; color: #fbbf24; }
+        .status-READY      { background: #0d2d1a; color: #4ade80; }
+        .status-DELIVERED  { background: #1a2d1a; color: #86efac; }
+        .status-CANCELLED  { background: #2d1a1a; color: #f87171; }
+
+        .status-select {
+            background: var(--ink-soft);
+            border: 1px solid var(--ink-border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-family: var(--font-mono);
+            font-size: .75rem;
+            padding: 4px 8px;
+            cursor: pointer;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .filter-chip {
+            padding: 5px 14px;
+            border-radius: 99px;
+            border: 1.5px solid var(--ink-border);
+            background: var(--ink-soft);
+            color: var(--text-soft);
+            font-family: var(--font-mono);
+            font-size: .75rem;
+            cursor: pointer;
+            transition: all .15s;
+        }
+        .filter-chip.active {
+            border-color: var(--role, #f59e0b);
+            color: var(--text);
+            background: rgba(245,158,11,.1);
+        }
+
+        .table-wrap {
+            background: var(--ink-card);
+            border: 1px solid var(--ink-border);
+            border-radius: var(--radius);
+            overflow: auto;
+            max-height: 600px;
+        }
+        .empty-msg {
+            padding: 28px;
+            font-family: var(--font-mono);
+            font-size: .85rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .msg-cell {
+            max-width: 180px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-soft);
+            font-style: italic;
+            font-size: .82rem;
+        }
+
+        .section-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .refresh-btn {
+            background: var(--ink-soft);
+            border: 1px solid var(--ink-border);
+            border-radius: var(--radius-sm);
+            color: var(--text-soft);
+            font-family: var(--font-mono);
+            font-size: .75rem;
+            padding: 6px 14px;
+            cursor: pointer;
+            transition: all .15s;
+            white-space: nowrap;
+        }
+        .refresh-btn:hover { background: var(--ink-border); color: var(--text); }
+
+        .today-legend {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--font-mono);
+            font-size: .72rem;
+            color: var(--text-muted);
+        }
+        .today-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: rgba(245,158,11,.5);
+            flex-shrink: 0;
+        }
+    </style>
 </head>
 <body>
 <div class="page-wrapper">
@@ -42,60 +185,71 @@
             <div class="skeleton" style="height:90px;border-radius:14px;"></div>
             <div class="skeleton" style="height:90px;border-radius:14px;"></div>
         </div>
-        <div class="skeleton" style="height:200px;border-radius:14px;margin-bottom:16px;"></div>
-        <div class="skeleton" style="height:140px;border-radius:14px;"></div>
+        <div class="skeleton" style="height:300px;border-radius:14px;margin-bottom:16px;"></div>
     </div>
 
-    <!-- Dashboard (hidden until auth resolves) -->
+    <!-- Dashboard -->
     <main id="state-dash" class="dash-layout hidden">
 
         <div class="dash-header fade-up">
             <div class="dash-avatar" id="dash-avatar"></div>
             <div class="dash-welcome">
-                <div class="dash-welcome-name"><em id="dash-name"></em> &#x2014; on shift &#x1F477;</div>
+                <div class="dash-welcome-name"><em id="dash-name"></em> <span style="font-family:var(--font-mono);font-size:.75rem;color:var(--text-muted);font-weight:400;"> / on shift</span> <span class="ms" style="color:var(--role,#f59e0b);">badge</span></div>
                 <div class="dash-welcome-sub" id="dash-sub">employee portal</div>
             </div>
         </div>
 
-        <div class="dash-section-label fade-up">shift overview</div>
+        <div class="dash-section-label fade-up">order stats</div>
         <div class="stat-grid fade-up d1">
             <div class="stat-card">
-                <div class="stat-card-value" id="task-count">-</div>
-                <div class="stat-card-label">tasks today</div>
+                <div class="stat-card-value" id="stat-total">-</div>
+                <div class="stat-card-label">total orders</div>
             </div>
             <div class="stat-card">
-                <div class="stat-card-value">&#x2713;</div>
-                <div class="stat-card-label">session active</div>
+                <div class="stat-card-value" id="stat-active">-</div>
+                <div class="stat-card-label">active orders</div>
             </div>
             <div class="stat-card">
-                <div class="stat-card-value">&#x1F36B;</div>
-                <div class="stat-card-label">choc chip cookies</div>
+                <div class="stat-card-value" id="stat-today">-</div>
+                <div class="stat-card-label">delivering today</div>
             </div>
         </div>
 
-        <div class="dash-section-label fade-up d2">today's tasks</div>
-        <div id="task-list" class="task-list fade-up d2"></div>
+        <div class="section-row fade-up d2">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                <span class="dash-section-label" style="margin:0;">manage orders</span>
+                <span class="today-legend"><span class="today-dot"></span>highlighted = delivering today</span>
+            </div>
+            <button class="refresh-btn" id="refresh-btn"><span class="ms">refresh</span> refresh</button>
+        </div>
 
-        <div class="dash-section-label fade-up d3">quick actions</div>
-        <div class="content-grid fade-up d3">
-            <div class="content-card">
-                <span class="content-card-icon">&#x1F4E6;</span>
-                <div class="content-card-title">manage orders</div>
-                <div class="content-card-body">View and process incoming orders, update statuses, and handle delivery tracking.</div>
-                <span class="content-card-tag">coming soon</span>
-            </div>
-            <div class="content-card">
-                <span class="content-card-icon">&#x1F3F7;&#xFE0F;</span>
-                <div class="content-card-title">update promotions</div>
-                <div class="content-card-body">Edit active promotions, set discount codes, and schedule upcoming deals.</div>
-                <span class="content-card-tag">coming soon</span>
-            </div>
-            <div class="content-card">
-                <span class="content-card-icon">&#x1F4AC;</span>
-                <div class="content-card-title">customer issues</div>
-                <div class="content-card-body">Respond to complaints, manage refunds, escalate to ownership when needed.</div>
-                <span class="content-card-tag">coming soon</span>
-            </div>
+        <div class="filter-bar fade-up d2">
+            <div class="filter-chip active" data-filter="ALL">all</div>
+            <div class="filter-chip" data-filter="CONFIRMED">confirmed</div>
+            <div class="filter-chip" data-filter="PREPARING">preparing</div>
+            <div class="filter-chip" data-filter="READY">ready</div>
+            <div class="filter-chip" data-filter="DELIVERED">delivered</div>
+            <div class="filter-chip" data-filter="CANCELLED">cancelled</div>
+        </div>
+
+        <div class="table-wrap fade-up d2">
+            <div id="orders-loading" class="empty-msg">loading orders...</div>
+            <table class="orders-table" id="orders-table" style="display:none;">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>customer</th>
+                        <th>qty</th>
+                        <th>deliver on</th>
+                        <th>message</th>
+                        <th>total</th>
+                        <th>status</th>
+                        <th>update</th>
+                    </tr>
+                </thead>
+                <tbody id="orders-body"></tbody>
+            </table>
+            <div id="orders-empty" class="empty-msg" style="display:none;">no orders match this filter</div>
         </div>
 
     </main>
@@ -105,50 +259,126 @@
 
 <script src="/app.js"></script>
 <script>
+    var allOrders  = [];
+    var activeFilter = 'ALL';
+    var today = new Date().toISOString().slice(0, 10);
+
     (async function() {
-        /* requireAuth handles redirect if not logged in or wrong role */
         var user = await requireAuth('EMPLOYEE');
         if (!user) return;
 
-        /* Pass user directly - no second network call */
         hydrateNav(user);
 
         document.getElementById('state-loading').classList.add('hidden');
         document.getElementById('state-dash').classList.remove('hidden');
-
         document.getElementById('dash-avatar').textContent = user.username.charAt(0).toUpperCase();
         document.getElementById('dash-name').textContent   = user.username;
         document.getElementById('dash-sub').textContent    = user.email;
 
-        /* Load tasks from backend */
-        try {
-            var data  = await apiFetch('/api/employee/dashboard');
-            var tasks = (data && data.tasks) ? data.tasks : [];
+        loadOrders();
+        initFilters();
 
-            document.getElementById('task-count').textContent = tasks.length;
-
-            var list = document.getElementById('task-list');
-            if (tasks.length === 0) {
-                list.innerHTML =
-                    '<div class="task-item">' +
-                    '<div class="task-text" style="color:var(--text-muted);">no tasks assigned yet</div>' +
-                    '</div>';
-            } else {
-                var html = '';
-                for (var i = 0; i < tasks.length; i++) {
-                    html +=
-                        '<div class="task-item">' +
-                        '<div class="task-dot"></div>' +
-                        '<div class="task-text">' + esc(tasks[i]) + '</div>' +
-                        '</div>';
-                }
-                list.innerHTML = html;
-            }
-        } catch (err) {
-            document.getElementById('task-list').innerHTML =
-                '<div class="task-item"><div class="task-text" style="color:var(--error);">could not load tasks - ' + esc(err.message) + '</div></div>';
-        }
+        document.getElementById('refresh-btn').addEventListener('click', function() {
+            loadOrders();
+        });
     }());
+
+    async function loadOrders() {
+        try {
+            allOrders = await apiFetch('/api/orders');
+            updateStats();
+            renderOrders();
+        } catch (err) {
+            document.getElementById('orders-loading').textContent =
+                'could not load orders — ' + esc(err.message);
+        }
+    }
+
+    function updateStats() {
+        var active = allOrders.filter(function(o) {
+            return o.status === 'CONFIRMED' || o.status === 'PREPARING' || o.status === 'READY';
+        }).length;
+        var delToday = allOrders.filter(function(o) { return o.deliveryDate === today; }).length;
+
+        document.getElementById('stat-total').textContent  = allOrders.length;
+        document.getElementById('stat-active').textContent = active;
+        document.getElementById('stat-today').textContent  = delToday;
+    }
+
+    function renderOrders() {
+        var filtered = activeFilter === 'ALL'
+            ? allOrders
+            : allOrders.filter(function(o) { return o.status === activeFilter; });
+
+        document.getElementById('orders-loading').style.display = 'none';
+
+        if (filtered.length === 0) {
+            document.getElementById('orders-table').style.display = 'none';
+            document.getElementById('orders-empty').style.display = '';
+            return;
+        }
+
+        document.getElementById('orders-empty').style.display = 'none';
+        document.getElementById('orders-table').style.display = '';
+
+        var STATUS_OPTIONS = ['CONFIRMED', 'PREPARING', 'READY', 'DELIVERED', 'CANCELLED'];
+
+        document.getElementById('orders-body').innerHTML = filtered.map(function(o) {
+            var opts = STATUS_OPTIONS.map(function(s) {
+                return '<option value="' + s + '"' + (s === o.status ? ' selected' : '') + '>' +
+                    s.charAt(0) + s.slice(1).toLowerCase() + '</option>';
+            }).join('');
+
+            var rowClass = (o.deliveryDate === today) ? ' class="row-today"' : '';
+
+            return '<tr' + rowClass + '>' +
+                '<td style="font-family:var(--font-mono);color:var(--text-soft);">#' + o.id + '</td>' +
+                '<td>' + esc(o.customerUsername) + '</td>' +
+                '<td style="font-family:var(--font-mono);">' + o.quantity + '</td>' +
+                '<td style="font-family:var(--font-mono);">' + o.deliveryDate + (o.deliveryDate === today ? ' <span style="font-family:var(--font-mono);font-size:.65rem;color:#b45309;background:rgba(245,158,11,.15);padding:1px 6px;border-radius:99px;">today</span>' : '') + '</td>' +
+                '<td class="msg-cell" title="' + esc(o.message || '') + '">' + esc(o.message || '—') + '</td>' +
+                '<td style="font-family:var(--font-mono);">$' + parseFloat(o.totalAmount).toFixed(2) + '</td>' +
+                '<td><span class="order-status status-' + o.status + '">' + o.status.toLowerCase() + '</span></td>' +
+                '<td>' +
+                    '<select class="status-select" data-order-id="' + o.id + '">' + opts + '</select>' +
+                '</td>' +
+            '</tr>';
+        }).join('');
+
+        /* wire up status selects */
+        document.querySelectorAll('.status-select').forEach(function(sel) {
+            sel.addEventListener('change', async function() {
+                var orderId = this.dataset.orderId;
+                var newStatus = this.value;
+                try {
+                    await apiFetch('/api/orders/' + orderId + '/status', {
+                        method: 'PATCH',
+                        body: { status: newStatus }
+                    });
+                    /* update local cache and re-render */
+                    var o = allOrders.find(function(x) { return String(x.id) === orderId; });
+                    if (o) { o.status = newStatus; }
+                    updateStats();
+                    renderOrders();
+                    toast.success('updated', 'Order #' + orderId + ' is now ' + newStatus.toLowerCase());
+                } catch (err) {
+                    toast.error('update failed', err.message);
+                    loadOrders(); /* reload to reset UI */
+                }
+            });
+        });
+    }
+
+    function initFilters() {
+        document.querySelectorAll('.filter-chip').forEach(function(chip) {
+            chip.addEventListener('click', function() {
+                document.querySelectorAll('.filter-chip').forEach(function(c) { c.classList.remove('active'); });
+                chip.classList.add('active');
+                activeFilter = chip.dataset.filter;
+                renderOrders();
+            });
+        });
+    }
 </script>
 </body>
 </html>

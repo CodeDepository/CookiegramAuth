@@ -6,7 +6,319 @@
     <title>My Dashboard - Cookiegram</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet"/>
     <link rel="stylesheet" href="/styles.css"/>
+    <style>
+        .ms { font-family: 'Material Symbols Outlined'; font-variation-settings: 'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 20; font-size: 1.2em; vertical-align: -0.15em; line-height: 1; display: inline-block; user-select: none; }
+        .ms-lg { font-family: 'Material Symbols Outlined'; font-variation-settings: 'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24; font-size: 2rem; display: block; line-height: 1; user-select: none; }
+        /* ── Modal ──────────────────────────────────────── */
+        .modal-backdrop {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(26,14,8,.55);
+            backdrop-filter: blur(4px);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-backdrop.open { display: flex; }
+        .modal {
+            background: var(--ink-card);
+            border: 1px solid var(--ink-border);
+            border-radius: var(--radius);
+            padding: 32px;
+            width: 100%; max-width: 500px;
+            max-height: 90vh; overflow-y: auto;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute; top: 16px; right: 16px;
+            background: none; border: none;
+            color: var(--text-muted); cursor: pointer;
+            font-size: 1.1rem; padding: 6px 10px;
+            border-radius: var(--radius-sm);
+            transition: background 180ms;
+        }
+        .modal-close:hover { background: var(--ink-soft); color: var(--text); }
+        .modal-title {
+            font-family: var(--font-display);
+            font-size: 1.2rem; font-weight: 700;
+            color: var(--text); margin-bottom: 4px;
+        }
+        .modal-sub { font-size: .85rem; color: var(--text-soft); margin-bottom: 24px; }
+
+        /* Form */
+        .form-row { margin-bottom: 18px; }
+        .form-label {
+            display: block;
+            font-family: var(--font-mono); font-size: .72rem;
+            color: var(--text-soft); margin-bottom: 6px;
+            text-transform: uppercase; letter-spacing: .05em;
+        }
+        .form-input {
+            width: 100%; box-sizing: border-box;
+            padding: 11px 13px;
+            background: var(--ink-soft);
+            border: 1.5px solid var(--ink-border);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-body); font-size: .9rem;
+            color: var(--text); outline: none;
+            transition: border-color .15s;
+        }
+        .form-input:focus { border-color: var(--neon); }
+
+        /* Qty */
+        .qty-row { display: flex; align-items: center; gap: 12px; }
+        .qty-btn {
+            width: 36px; height: 36px;
+            background: var(--ink-soft);
+            border: 1.5px solid var(--ink-border);
+            border-radius: var(--radius-sm);
+            color: var(--text); font-size: 1.1rem;
+            cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+        }
+        .qty-btn:hover { background: var(--ink-border); }
+        #qty-display { font-family: var(--font-mono); font-size: 1rem; min-width: 28px; text-align: center; }
+
+        /* Calendar */
+        .date-loading { font-family: var(--font-mono); font-size: .8rem; color: var(--text-muted); padding: 8px 0; }
+        .cal-wrap { margin-bottom: 2px; }
+        .cal-nav-row {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .cal-nav-btn {
+            background: var(--ink-soft); border: 1px solid var(--ink-border);
+            border-radius: var(--radius-sm); color: var(--text);
+            width: 30px; height: 30px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .9rem; transition: background .12s;
+        }
+        .cal-nav-btn:hover { background: var(--ink-border); }
+        .cal-month-label {
+            font-family: var(--font-mono); font-size: .82rem;
+            color: var(--text); font-weight: 700;
+        }
+        .cal-grid {
+            display: grid; grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+        }
+        .cal-dow {
+            font-family: var(--font-mono); font-size: .62rem;
+            text-transform: uppercase; letter-spacing: .04em;
+            color: var(--text-muted); text-align: center; padding: 4px 0;
+        }
+        .cal-cell {
+            height: 34px; display: flex; align-items: center; justify-content: center;
+            border-radius: var(--radius-sm); font-family: var(--font-mono);
+            font-size: .78rem; transition: all .12s;
+        }
+        .cal-avail {
+            background: var(--ink-soft); color: var(--text);
+            border: 1px solid var(--ink-border); cursor: pointer;
+        }
+        .cal-avail:hover { border-color: var(--neon); background: rgba(232,24,90,.06); }
+        .cal-avail.cal-selected { border-color: var(--neon); background: rgba(232,24,90,.13); font-weight: 700; }
+        .cal-unavail { color: var(--text-muted); opacity: .3; font-size: .72rem; }
+        .cal-empty { }
+
+        /* Price summary */
+        .price-summary {
+            background: var(--ink-soft); border-radius: var(--radius-sm);
+            padding: 14px 16px; margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .price-summary-label { font-size: .85rem; color: var(--text-soft); }
+        .price-summary-detail { font-size: .75rem; color: var(--text-muted); font-family: var(--font-mono); margin-top: 2px; }
+        .price-summary-total { font-family: var(--font-display); font-size: 1.3rem; font-weight: 900; color: var(--text); }
+
+        .divider { border: none; border-top: 1px solid var(--ink-border); margin: 22px 0; }
+
+        /* ── PayPal fake flow ───────────────────────────── */
+        .pp-wrap {
+            background: #f5f7fa;
+            border-radius: 12px;
+            padding: 28px 24px;
+            margin-bottom: 8px;
+        }
+        .pp-logo {
+            font-size: 1.6rem;
+            font-weight: 900;
+            margin-bottom: 4px;
+            letter-spacing: -.03em;
+        }
+        .pp-logo .pp-pay { color: #253b80; }
+        .pp-logo .pp-pal { color: #179bd7; }
+        .pp-subtitle { font-size: .8rem; color: #6b7280; margin-bottom: 20px; font-family: sans-serif; }
+        .pp-input {
+            width: 100%; box-sizing: border-box;
+            padding: 12px 14px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 6px;
+            font-size: .95rem;
+            font-family: sans-serif;
+            outline: none; margin-bottom: 12px;
+            transition: border-color .15s;
+        }
+        .pp-input:focus { border-color: #0070ba; box-shadow: 0 0 0 3px rgba(0,112,186,.12); }
+        .pp-btn-blue {
+            width: 100%; padding: 13px;
+            background: #0070ba; color: #fff;
+            border: none; border-radius: 25px;
+            font-size: .9rem; font-weight: 700;
+            cursor: pointer; font-family: sans-serif;
+            transition: background .15s;
+        }
+        .pp-btn-blue:hover { background: #005ea6; }
+        .pp-btn-blue:disabled { opacity: .6; cursor: not-allowed; }
+        .pp-btn-yellow {
+            width: 100%; padding: 13px;
+            background: #ffc439; color: #003087;
+            border: none; border-radius: 25px;
+            font-size: .9rem; font-weight: 700;
+            cursor: pointer; font-family: sans-serif;
+            transition: background .15s; margin-bottom: 10px;
+        }
+        .pp-btn-yellow:hover { background: #f0b429; }
+        .pp-divider { height: 1px; background: #e5e7eb; margin: 16px 0; }
+        .pp-hint {
+            font-family: sans-serif; font-size: .78rem;
+            color: #6b7280; text-align: center; margin-top: 10px;
+        }
+        .pp-hint strong { color: #0070ba; }
+        .pp-user-row {
+            display: flex; align-items: center; gap: 10px;
+            background: #fff; border: 1px solid #e5e7eb;
+            border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;
+        }
+        .pp-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: #0070ba; color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: .9rem; font-family: sans-serif;
+            flex-shrink: 0;
+        }
+        .pp-user-name { font-family: sans-serif; font-size: .85rem; font-weight: 600; color: #1a1a1a; }
+        .pp-user-email { font-family: sans-serif; font-size: .78rem; color: #6b7280; }
+        .pp-amount-row {
+            background: #fff; border: 1px solid #e5e7eb;
+            border-radius: 8px; padding: 14px;
+            text-align: center; margin-bottom: 14px;
+        }
+        .pp-amount-label { font-family: sans-serif; font-size: .78rem; color: #6b7280; margin-bottom: 4px; }
+        .pp-amount-value { font-family: sans-serif; font-size: 1.5rem; font-weight: 700; color: #1a1a1a; }
+        .pp-spinner {
+            width: 36px; height: 36px;
+            border: 3px solid rgba(0,112,186,.2);
+            border-top-color: #0070ba;
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+            margin: 0 auto 12px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .pp-loading-text { font-family: sans-serif; font-size: .85rem; color: #6b7280; text-align: center; }
+
+        /* ── Order cards ────────────────────────────────── */
+        .order-card {
+            background: var(--ink-card);
+            border: 1px solid var(--ink-border);
+            border-radius: var(--radius-sm);
+            padding: 16px 20px;
+            margin-bottom: 10px;
+        }
+        .order-card-top {
+            display: flex; justify-content: space-between;
+            align-items: flex-start; gap: 12px; flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        .order-card-title {
+            font-family: var(--font-display); font-size: .95rem;
+            font-weight: 700; color: var(--text);
+        }
+        .order-meta {
+            font-size: .8rem; color: var(--text-soft);
+            font-family: var(--font-mono); margin-top: 3px;
+        }
+        .order-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+        .btn-sm {
+            padding: 6px 14px; font-size: .75rem; width: auto;
+            border-radius: var(--radius-sm); font-family: var(--font-mono);
+            cursor: pointer; border: none; transition: all .15s;
+        }
+        .btn-cancel {
+            background: var(--error-bg); color: var(--error);
+            border: 1px solid rgba(212,43,43,.2);
+        }
+        .btn-cancel:hover { background: rgba(212,43,43,.15); }
+        .btn-reorder {
+            background: var(--ink-soft); color: var(--text-soft);
+            border: 1px solid var(--ink-border);
+        }
+        .btn-reorder:hover { background: var(--ink-border); color: var(--text); }
+
+        /* Status badge */
+        .order-status {
+            font-family: var(--font-mono); font-size: .72rem;
+            padding: 3px 10px; border-radius: 99px; flex-shrink: 0;
+        }
+        .status-CONFIRMED  { background: rgba(0,112,186,.1);  color: #0070ba; }
+        .status-PREPARING  { background: rgba(245,158,11,.1); color: #b45309; }
+        .status-READY      { background: rgba(34,197,94,.1);  color: #15803d; }
+        .status-DELIVERED  { background: rgba(34,197,94,.15); color: #166534; }
+        .status-CANCELLED  { background: rgba(212,43,43,.08); color: var(--error); text-decoration: line-through; }
+
+        /* Status progress */
+        .status-progress {
+            display: flex; align-items: center; gap: 0;
+            margin-top: 12px; overflow: hidden;
+        }
+        .sp-step {
+            flex: 1; text-align: center;
+            font-family: var(--font-mono); font-size: .65rem;
+            text-transform: uppercase; letter-spacing: .04em;
+            color: var(--text-muted); padding: 6px 4px;
+            position: relative;
+        }
+        .sp-step::before {
+            content: '';
+            display: block; width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--ink-border);
+            margin: 0 auto 4px;
+        }
+        .sp-step.done::before { background: var(--success); }
+        .sp-step.active::before { background: var(--neon); box-shadow: 0 0 8px rgba(232,24,90,.4); }
+        .sp-step.done { color: var(--success); }
+        .sp-step.active { color: var(--neon); font-weight: 700; }
+
+        /* Payment method selector */
+        .pm-option {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 16px;
+            border: 2px solid var(--ink-border);
+            border-radius: var(--radius-sm);
+            cursor: pointer; transition: all .15s;
+            margin-bottom: 10px; background: var(--ink-card);
+        }
+        .pm-option.selected { border-color: #0070ba; background: rgba(0,112,186,.04); }
+        .pm-option.disabled { opacity: .45; cursor: not-allowed; }
+        .pm-option-icon { font-size: 1.4rem; flex-shrink: 0; }
+        .pm-option-label { font-family: var(--font-body); font-size: .9rem; font-weight: 600; color: var(--text); }
+        .pm-option-sub { font-size: .78rem; color: var(--text-muted); margin-top: 1px; }
+        .pm-radio {
+            width: 18px; height: 18px; border-radius: 50%;
+            border: 2px solid var(--ink-border);
+            margin-left: auto; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .pm-option.selected .pm-radio { border-color: #0070ba; }
+        .pm-option.selected .pm-radio::after {
+            content: ''; width: 8px; height: 8px;
+            border-radius: 50%; background: #0070ba;
+        }
+    </style>
 </head>
 <body>
 <div class="page-wrapper">
@@ -16,140 +328,605 @@
             <span class="cookie-dot"></span>cookiegram
         </a>
         <div class="nav-links">
-      <span id="nav-auth" class="hidden">
-        <a href="/login.html" class="nav-pill">sign in</a>
-      </span>
+            <span id="nav-auth" class="hidden">
+                <a href="/login.html" class="nav-pill">sign in</a>
+            </span>
             <span id="nav-user" class="hidden" style="display:flex;gap:8px;align-items:center;">
-        <span class="role-badge" id="nav-role"></span>
-        <span id="nav-username" style="font-family:var(--font-mono);font-size:.8rem;color:var(--text-soft);"></span>
-        <a href="/customer.html" id="nav-dashboard" style="font-family:var(--font-mono);font-size:.8rem;">dashboard</a>
-        <button type="button" id="nav-logout">sign out</button>
-      </span>
+                <span class="role-badge" id="nav-role"></span>
+                <span id="nav-username" style="font-family:var(--font-mono);font-size:.8rem;color:var(--text-soft);"></span>
+                <a href="/customer.html" id="nav-dashboard" style="font-family:var(--font-mono);font-size:.8rem;">dashboard</a>
+                <button type="button" id="nav-logout">sign out</button>
+            </span>
         </div>
     </nav>
 
-    <!-- Skeleton while loading -->
+    <!-- Skeleton -->
     <div id="state-loading" class="dash-layout">
         <div style="display:flex;gap:16px;align-items:center;margin-bottom:40px;padding-bottom:32px;border-bottom:1px solid var(--ink-border);">
             <div class="skeleton" style="width:60px;height:60px;border-radius:50%;flex-shrink:0;"></div>
-            <div style="flex:1;">
-                <div class="skeleton skeleton-line" style="width:200px;height:20px;"></div>
-                <div class="skeleton skeleton-line" style="width:120px;height:12px;margin-top:8px;"></div>
-            </div>
+            <div style="flex:1;"><div class="skeleton skeleton-line" style="width:200px;height:20px;"></div><div class="skeleton skeleton-line" style="width:120px;margin-top:8px;"></div></div>
         </div>
         <div class="stat-grid">
             <div class="skeleton" style="height:90px;border-radius:14px;"></div>
             <div class="skeleton" style="height:90px;border-radius:14px;"></div>
             <div class="skeleton" style="height:90px;border-radius:14px;"></div>
         </div>
-        <div class="skeleton" style="height:160px;border-radius:14px;margin-bottom:16px;"></div>
-        <div class="skeleton" style="height:160px;border-radius:14px;"></div>
+        <div class="skeleton" style="height:140px;border-radius:14px;margin-bottom:16px;"></div>
+        <div class="skeleton" style="height:200px;border-radius:14px;"></div>
     </div>
 
-    <!-- Dashboard (hidden until auth resolves) -->
+    <!-- Dashboard -->
     <main id="state-dash" class="dash-layout hidden">
 
         <div class="dash-header fade-up">
             <div class="dash-avatar" id="dash-avatar"></div>
             <div class="dash-welcome">
-                <div class="dash-welcome-name">hey, <em id="dash-name"></em> &#x1F36A;</div>
+                <div class="dash-welcome-name">hey, <em id="dash-name"></em> <span class="ms" style="color:var(--neon);">cookie</span></div>
                 <div class="dash-welcome-sub" id="dash-sub">your cookie dashboard</div>
+            </div>
+            <div style="margin-left:auto;">
+                <button type="button" class="btn btn-primary" style="width:auto;padding:12px 22px;" id="order-btn">
+                    <span class="ms">add</span> new order
+                </button>
             </div>
         </div>
 
+        <!-- Stats -->
         <div class="dash-section-label fade-up">your activity</div>
         <div class="stat-grid fade-up d1">
             <div class="stat-card">
-                <div class="stat-card-value">0</div>
+                <div class="stat-card-value" id="order-count">-</div>
                 <div class="stat-card-label">orders placed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-value" id="active-count">-</div>
+                <div class="stat-card-label">active orders</div>
             </div>
             <div class="stat-card">
                 <div class="stat-card-value" id="promo-count">-</div>
                 <div class="stat-card-label">active promos</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-card-value">&#x1F36B;</div>
-                <div class="stat-card-label">choc chip cookies</div>
-            </div>
         </div>
 
-        <div class="dash-section-label fade-up d2">your promotions</div>
+        <!-- Promotions -->
+        <div class="dash-section-label fade-up d2">promotions</div>
         <div id="promos-grid" class="content-grid fade-up d2"></div>
 
-        <div class="dash-section-label fade-up d3">ready to order?</div>
-        <div class="fade-up d3" style="background:var(--ink-card);border:1px solid var(--ink-border);border-radius:var(--radius);padding:28px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
+        <!-- Place an order CTA (only shown when no orders) -->
+        <div id="order-cta" class="fade-up d3" style="display:none;background:var(--ink-card);border:1px solid var(--ink-border);border-radius:var(--radius);padding:28px;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:36px;">
             <div>
-                <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:6px;">chocolate chip cookie</div>
-                <div style="font-size:.875rem;color:var(--text-soft);">baked fresh &middot; custom message &middot; delivered to your door</div>
+                <div style="font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:4px;">ready to order?</div>
+                <div style="font-size:.875rem;color:var(--text-soft);">chocolate chip cookie &middot; $5.99 each &middot; delivered to your door</div>
             </div>
-            <button type="button" class="btn btn-primary" style="width:auto;padding:13px 28px;" id="order-btn">
-                place an order
-            </button>
+            <button type="button" class="btn btn-primary" style="width:auto;padding:12px 24px;" id="order-cta-btn"><span class="ms">cookie</span> place an order</button>
         </div>
+
+        <!-- Orders -->
+        <div class="dash-section-label fade-up d3">your orders</div>
+        <div id="orders-list" class="fade-up d3"></div>
 
     </main>
 
     <footer class="footer">&#169; 2025 cookiegram &middot; one cookie, infinite messages</footer>
 </div>
 
+<!-- ══ ORDER MODAL ══════════════════════════════════════════ -->
+<div class="modal-backdrop" id="order-modal">
+    <div class="modal">
+        <button class="modal-close" id="modal-close-btn"><span class="ms">close</span></button>
+
+        <!-- Step 1: Order details -->
+        <div id="step-details">
+            <div class="modal-title"><span class="ms">cookie</span> place your order</div>
+            <div class="modal-sub">chocolate chip cookie &middot; $5.99 each</div>
+
+            <div class="form-row">
+                <label class="form-label">delivery date</label>
+                <div id="date-loading" class="date-loading">loading available dates...</div>
+                <div id="date-calendar" class="cal-wrap" style="display:none;"></div>
+                <div style="font-size:.72rem;color:var(--text-muted);margin-top:6px;font-family:var(--font-mono);">earliest: 3 days from today &middot; holidays &amp; blocked dates excluded</div>
+            </div>
+
+            <div class="form-row">
+                <label class="form-label">quantity</label>
+                <div class="qty-row">
+                    <button class="qty-btn" id="qty-minus"><span class="ms">remove</span></button>
+                    <span id="qty-display">1</span>
+                    <button class="qty-btn" id="qty-plus"><span class="ms">add</span></button>
+                    <span style="font-size:.82rem;color:var(--text-soft);font-family:var(--font-mono);">cookies &middot; <strong id="qty-total" style="color:var(--text);">$5.99</strong></span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <label class="form-label">cookie message <span style="opacity:.5;">(optional)</span></label>
+                <textarea id="cookie-msg" class="form-input" rows="2" placeholder="e.g. Happy Birthday!" style="resize:vertical;min-height:60px;"></textarea>
+            </div>
+
+            <button class="btn btn-primary" id="btn-to-payment">continue to payment <span class="ms">arrow_forward</span></button>
+        </div>
+
+        <!-- Step 2: Payment method selection -->
+        <div id="step-payment-method" style="display:none;">
+            <div class="modal-title">secure checkout</div>
+            <div class="modal-sub">choose your payment method</div>
+
+            <div class="price-summary">
+                <div>
+                    <div class="price-summary-label">order total</div>
+                    <div class="price-summary-detail" id="payment-detail"></div>
+                </div>
+                <div class="price-summary-total" id="payment-total">$0.00</div>
+            </div>
+
+            <div class="pm-option selected" id="pm-paypal">
+                <div class="pm-option-icon"><span class="ms-lg" style="font-size:1.6rem;color:#0070ba;">account_balance_wallet</span></div>
+                <div>
+                    <div class="pm-option-label">PayPal</div>
+                    <div class="pm-option-sub">Fast, secure checkout with PayPal</div>
+                </div>
+                <div class="pm-radio"></div>
+            </div>
+            <div class="pm-option disabled">
+                <div class="pm-option-icon"><span class="ms-lg" style="font-size:1.6rem;color:var(--text-muted);">credit_card</span></div>
+                <div>
+                    <div class="pm-option-label">Credit / Debit Card</div>
+                    <div class="pm-option-sub">coming soon</div>
+                </div>
+                <div class="pm-radio"></div>
+            </div>
+
+            <div style="display:flex;gap:10px;margin-top:20px;">
+                <button class="btn" id="btn-back-to-details" style="width:auto;padding:12px 18px;background:var(--ink-soft);border:1px solid var(--ink-border);"><span class="ms">arrow_back</span> back</button>
+                <button class="btn btn-primary" id="btn-paypal-start" style="flex:1;">continue with PayPal</button>
+            </div>
+        </div>
+
+        <!-- Step 3: PayPal email (fake login) -->
+        <div id="step-paypal-email" style="display:none;">
+            <div class="pp-wrap">
+                <div class="pp-logo"><span class="pp-pay">Pay</span><span class="pp-pal">Pal</span></div>
+                <div class="pp-subtitle">Sign in to your PayPal account to continue</div>
+                <input type="email" class="pp-input" id="pp-email-input" placeholder="Email address" autocomplete="email"/>
+                <button class="pp-btn-blue" id="pp-next-btn">Next</button>
+                <div class="pp-divider"></div>
+                <div class="pp-hint">Test account: <strong>buyer@sandbox.paypal.com</strong></div>
+            </div>
+            <button class="btn" id="btn-back-to-method" style="width:auto;padding:10px 16px;background:none;border:1px solid var(--ink-border);margin-top:10px;font-size:.8rem;"><span class="ms">arrow_back</span> back</button>
+        </div>
+
+        <!-- Step 4: PayPal loading (fake auth) -->
+        <div id="step-paypal-loading" style="display:none;">
+            <div class="pp-wrap" style="text-align:center;padding:40px 24px;">
+                <div class="pp-logo" style="margin-bottom:20px;"><span class="pp-pay">Pay</span><span class="pp-pal">Pal</span></div>
+                <div class="pp-spinner"></div>
+                <div class="pp-loading-text" id="pp-loading-msg">Signing you in...</div>
+            </div>
+        </div>
+
+        <!-- Step 5: PayPal approval (fake) -->
+        <div id="step-paypal-approve" style="display:none;">
+            <div class="pp-wrap">
+                <div class="pp-logo" style="margin-bottom:4px;"><span class="pp-pay">Pay</span><span class="pp-pal">Pal</span></div>
+                <div class="pp-subtitle">Review and approve your payment</div>
+
+                <div class="pp-user-row">
+                    <div class="pp-avatar" id="pp-avatar-letter">B</div>
+                    <div>
+                        <div class="pp-user-name" id="pp-display-name">Sandbox Buyer</div>
+                        <div class="pp-user-email" id="pp-display-email">buyer@sandbox.paypal.com</div>
+                    </div>
+                </div>
+
+                <div class="pp-amount-row">
+                    <div class="pp-amount-label">Payment to Cookiegram</div>
+                    <div class="pp-amount-value" id="pp-approve-amount">$0.00 CAD</div>
+                </div>
+
+                <div style="font-family:sans-serif;font-size:.78rem;color:#6b7280;margin-bottom:14px;line-height:1.5;">
+                    Deliver: <strong id="pp-approve-summary"></strong>
+                </div>
+
+                <button class="pp-btn-yellow" id="pp-approve-btn">Complete Purchase</button>
+                <div class="pp-hint"><span style="font-family:'Material Symbols Outlined';font-size:.9em;vertical-align:-.1em;">lock</span> Your financial information is never shared with Cookiegram</div>
+            </div>
+            <button class="btn" id="btn-back-to-email" style="width:auto;padding:10px 16px;background:none;border:1px solid var(--ink-border);margin-top:10px;font-size:.8rem;"><span class="ms">arrow_back</span> back</button>
+        </div>
+
+        <!-- Step 6: Placing order (processing) -->
+        <div id="step-placing" style="display:none;text-align:center;padding:24px 0;">
+            <div class="pp-spinner" style="margin:0 auto 16px;"></div>
+            <div style="font-family:var(--font-mono);font-size:.9rem;color:var(--text);">placing your order...</div>
+            <div style="font-size:.8rem;color:var(--text-muted);margin-top:6px;">this takes just a moment</div>
+        </div>
+
+        <!-- Step 7: Confirmation -->
+        <div id="step-confirm" style="display:none;text-align:center;padding:16px 0;">
+            <div style="margin-bottom:14px;"><span class="ms-lg" style="font-size:3rem;color:var(--neon);">check_circle</span></div>
+            <div style="font-family:var(--font-display);font-size:1.2rem;font-weight:700;color:var(--text);margin-bottom:8px;">order placed!</div>
+            <div id="confirm-detail" style="font-size:.875rem;color:var(--text-soft);margin-bottom:24px;line-height:1.6;"></div>
+            <button class="btn btn-primary" id="btn-done" style="width:auto;padding:12px 28px;">done</button>
+        </div>
+    </div>
+</div>
+
 <script src="/app.js"></script>
 <script>
-    var PROMO_ICONS = ['&#127881;', '&#128640;', '&#128184;', '&#127873;', '&#11088;', '&#127850;'];
+    var PROMO_ICONS = ['<span class="ms-lg" style="font-size:1.4rem;color:var(--neon);">local_offer</span>','<span class="ms-lg" style="font-size:1.4rem;color:var(--neon);">rocket_launch</span>','<span class="ms-lg" style="font-size:1.4rem;color:var(--neon);">savings</span>','<span class="ms-lg" style="font-size:1.4rem;color:var(--neon);">redeem</span>','<span class="ms-lg" style="font-size:1.4rem;color:var(--neon);">star</span>','<span class="ms-lg" style="font-size:1.4rem;color:var(--neon);">loyalty</span>'];
+    var PRICE = 5.99;
+    var selectedDate = null;
+    var quantity     = 1;
+    var ppEmail      = '';
+    var prefillDate  = null; // for reorder
 
+    /* ── init ─────────────────────────────────────── */
     (async function() {
-      /* requireAuth handles redirect if not logged in or wrong role */
-      var user = await requireAuth('CUSTOMER');
-      if (!user) return;
-
-      /* Pass user directly - no second network call */
-      hydrateNav(user);
-
-      document.getElementById('state-loading').classList.add('hidden');
-      document.getElementById('state-dash').classList.remove('hidden');
-
-      document.getElementById('dash-avatar').textContent = user.username.charAt(0).toUpperCase();
-      document.getElementById('dash-name').textContent   = user.username;
-      document.getElementById('dash-sub').textContent    = user.email;
-
-      document.getElementById('order-btn').addEventListener('click', function() {
-        toast.info('coming soon!', 'ordering will be available shortly');
-      });
-
-      /* Load promotions from backend */
-      try {
-        var data   = await apiFetch('/api/promotions/my');
-        var promos = (data && data.promotions) ? data.promotions : [];
-
-        document.getElementById('promo-count').textContent = promos.length;
-
-        var grid = document.getElementById('promos-grid');
-        if (promos.length === 0) {
-          grid.innerHTML =
-            '<div style="color:var(--text-muted);font-family:var(--font-mono);font-size:.85rem;padding:20px 0;">' +
-            'no active promotions right now - check back soon!' +
-            '</div>';
-        } else {
-          var html = '';
-          for (var i = 0; i < promos.length; i++) {
-            var p = promos[i];
-            var icon = PROMO_ICONS[i % PROMO_ICONS.length];
-            html +=
-              '<div class="content-card">' +
-                '<span class="content-card-icon">' + icon + '</span>' +
-                '<div class="content-card-title">' + esc(p.title) + '</div>' +
-                '<div class="content-card-body">' + esc(p.description) + '</div>' +
-                '<span class="content-card-tag">active offer</span>' +
-              '</div>';
-          }
-          grid.innerHTML = html;
-        }
-      } catch (err) {
-        document.getElementById('promos-grid').innerHTML =
-          '<div style="color:var(--error);font-family:var(--font-mono);font-size:.8rem;">' +
-          'could not load promotions - ' + esc(err.message) +
-          '</div>';
-      }
+        var user = await requireAuth('CUSTOMER');
+        if (!user) return;
+        hydrateNav(user);
+        document.getElementById('state-loading').classList.add('hidden');
+        document.getElementById('state-dash').classList.remove('hidden');
+        document.getElementById('dash-avatar').textContent = user.username.charAt(0).toUpperCase();
+        document.getElementById('dash-name').textContent   = user.username;
+        document.getElementById('dash-sub').textContent    = user.email;
+        document.getElementById('order-btn').addEventListener('click', function() { openOrderModal(); });
+        document.getElementById('order-cta-btn').addEventListener('click', function() { openOrderModal(); });
+        loadPromotions();
+        loadMyOrders();
     }());
+
+    /* ── promotions ───────────────────────────────── */
+    async function loadPromotions() {
+        try {
+            var data = await apiFetch('/api/promotions/my');
+            var promos = (data && data.promotions) ? data.promotions : [];
+            document.getElementById('promo-count').textContent = promos.length;
+            var grid = document.getElementById('promos-grid');
+            if (!promos.length) {
+                grid.innerHTML = '<div style="color:var(--text-muted);font-family:var(--font-mono);font-size:.82rem;padding:12px 0;">no active promotions right now — check back soon!</div>';
+            } else {
+                grid.innerHTML = promos.map(function(p, i) {
+                    return '<div class="content-card"><span class="content-card-icon">' + PROMO_ICONS[i%PROMO_ICONS.length] + '</span>' +
+                        '<div class="content-card-title">' + esc(p.title) + '</div>' +
+                        '<div class="content-card-body">' + esc(p.description) + '</div>' +
+                        '<span class="content-card-tag">active offer</span></div>';
+                }).join('');
+            }
+        } catch(e) {
+            document.getElementById('promos-grid').innerHTML = '<div style="color:var(--error);font-size:.8rem;font-family:var(--font-mono);">could not load promotions</div>';
+        }
+    }
+
+    /* ── orders ───────────────────────────────────── */
+    async function loadMyOrders() {
+        var list = document.getElementById('orders-list');
+        try {
+            var orders = await apiFetch('/api/orders/my');
+            document.getElementById('order-count').textContent = orders.length;
+            var active = orders.filter(function(o) {
+                return o.status === 'CONFIRMED' || o.status === 'PREPARING' || o.status === 'READY';
+            }).length;
+            document.getElementById('active-count').textContent = active;
+
+            if (!orders.length) {
+                document.getElementById('order-cta').style.display = 'flex';
+                list.innerHTML = '';
+                return;
+            }
+            document.getElementById('order-cta').style.display = 'none';
+
+            var PROGRESS = ['CONFIRMED','PREPARING','READY','DELIVERED'];
+            list.innerHTML = orders.map(function(o) {
+                var isCancelled = o.status === 'CANCELLED';
+                var statusHtml = '<span class="order-status status-' + o.status + '">' + o.status.toLowerCase() + '</span>';
+
+                // progress bar (skip for cancelled)
+                var progressHtml = '';
+                if (!isCancelled) {
+                    var curIdx = PROGRESS.indexOf(o.status);
+                    progressHtml = '<div class="status-progress">' +
+                        PROGRESS.map(function(s, i) {
+                            var cls = i < curIdx ? 'done' : (i === curIdx ? 'active' : '');
+                            return '<div class="sp-step ' + cls + '">' + s.toLowerCase() + '</div>';
+                        }).join('') +
+                    '</div>';
+                }
+
+                // actions
+                var actionsHtml = '<div class="order-actions">';
+                if (o.status === 'CONFIRMED') {
+                    actionsHtml += '<button class="btn btn-sm btn-cancel" data-id="' + o.id + '"><span class="ms">cancel</span> cancel</button>';
+                }
+                if (o.status === 'CANCELLED' || o.status === 'DELIVERED') {
+                    actionsHtml += '<button class="btn btn-sm btn-delete" data-id="' + o.id + '" style="background:rgba(100,100,100,.08);color:var(--text-muted);border:1px solid var(--ink-border);"><span class="ms">delete</span> remove</button>';
+                }
+                actionsHtml += '<button class="btn btn-sm btn-reorder" data-date="' + esc(o.deliveryDate) + '" data-qty="' + o.quantity + '" data-msg="' + esc(o.message||'') + '"><span class="ms">refresh</span> reorder</button>';
+                actionsHtml += '<span style="font-family:var(--font-mono);font-size:.75rem;color:var(--text-muted);">$' + parseFloat(o.totalAmount).toFixed(2) + '</span>';
+                actionsHtml += '</div>';
+
+                return '<div class="order-card">' +
+                    '<div class="order-card-top">' +
+                        '<div>' +
+                            '<div class="order-card-title">' + o.quantity + ' &times; choco chip cookie</div>' +
+                            '<div class="order-meta">deliver: ' + o.deliveryDate +
+                                (o.message ? ' &middot; &ldquo;' + esc(o.message) + '&rdquo;' : '') +
+                            '</div>' +
+                        '</div>' +
+                        statusHtml +
+                    '</div>' +
+                    progressHtml +
+                    actionsHtml +
+                '</div>';
+            }).join('');
+
+            // wire cancel buttons
+            list.querySelectorAll('.btn-cancel').forEach(function(btn) {
+                btn.addEventListener('click', async function() {
+                    if (!confirm('Cancel this order?')) return;
+                    try {
+                        await apiFetch('/api/orders/' + this.dataset.id + '/cancel', { method: 'POST' });
+                        toast.success('order cancelled', 'Your order has been cancelled');
+                        loadMyOrders();
+                    } catch(e) {
+                        toast.error('could not cancel', e.message);
+                    }
+                });
+            });
+
+            // wire delete buttons
+            list.querySelectorAll('.btn-delete').forEach(function(btn) {
+                btn.addEventListener('click', async function() {
+                    if (!confirm('Remove this order from your history?')) return;
+                    try {
+                        await apiFetch('/api/orders/' + this.dataset.id, { method: 'DELETE' });
+                        toast.success('order removed', 'Order removed from your history');
+                        loadMyOrders();
+                    } catch(e) {
+                        toast.error('could not remove', e.message);
+                    }
+                });
+            });
+
+            // wire reorder buttons
+            list.querySelectorAll('.btn-reorder').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    prefillDate = btn.dataset.date;
+                    var qty = parseInt(btn.dataset.qty) || 1;
+                    var msg = btn.dataset.msg || '';
+                    openOrderModal(qty, msg);
+                });
+            });
+
+        } catch(e) {
+            list.innerHTML = '<div style="color:var(--error);font-family:var(--font-mono);font-size:.8rem;">could not load orders — ' + esc(e.message) + '</div>';
+        }
+    }
+
+    /* ── modal lifecycle ──────────────────────────── */
+    function openOrderModal(preQty, preMsg) {
+        selectedDate = null;
+        quantity     = preQty || 1;
+        ppEmail      = '';
+        calYear  = 0;
+        calMonth = 0;
+        document.getElementById('qty-display').textContent = quantity;
+        document.getElementById('qty-total').textContent   = '$' + (PRICE * quantity).toFixed(2);
+        document.getElementById('cookie-msg').value        = preMsg || '';
+        document.getElementById('pp-email-input').value    = '';
+        showStep('details');
+        document.getElementById('order-modal').classList.add('open');
+        loadAvailableDates();
+    }
+
+    function closeOrderModal() {
+        document.getElementById('order-modal').classList.remove('open');
+        prefillDate = null;
+    }
+
+    document.getElementById('modal-close-btn').addEventListener('click', closeOrderModal);
+    document.getElementById('order-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeOrderModal();
+    });
+
+    function showStep(name) {
+        ['details','payment-method','paypal-email','paypal-loading','paypal-approve','placing','confirm'].forEach(function(s) {
+            var el = document.getElementById('step-' + s);
+            if (el) el.style.display = (s === name) ? '' : 'none';
+        });
+    }
+
+    /* ── dates ────────────────────────────────────── */
+    var availDates = [];
+    var calYear = 0, calMonth = 0;
+
+    async function loadAvailableDates() {
+        document.getElementById('date-loading').style.display = '';
+        document.getElementById('date-calendar').style.display = 'none';
+        try {
+            var data = await apiFetch('/api/orders/available-dates');
+            availDates = data.availableDates || [];
+            PRICE = parseFloat(data.pricePerCookie) || 5.99;
+            renderCalendar(availDates);
+        } catch(e) {
+            document.getElementById('date-loading').textContent = 'could not load dates';
+        }
+    }
+
+    function renderCalendar(dates) {
+        document.getElementById('date-loading').style.display = 'none';
+        var wrap = document.getElementById('date-calendar');
+        wrap.style.display = '';
+
+        var availSet = {};
+        dates.forEach(function(d) { availSet[d] = true; });
+
+        // Determine starting month
+        if (calYear === 0) {
+            var first = dates[0] || new Date().toISOString().slice(0,10);
+            var fp = first.split('-');
+            calYear  = parseInt(fp[0]);
+            calMonth = parseInt(fp[1]) - 1;
+        }
+
+        // If prefillDate exists, jump to its month
+        if (prefillDate && !selectedDate) {
+            var pp = prefillDate.split('-');
+            calYear  = parseInt(pp[0]);
+            calMonth = parseInt(pp[1]) - 1;
+            selectedDate = prefillDate;
+        }
+
+        drawMonth(availSet);
+    }
+
+    function drawMonth(availSet) {
+        var wrap = document.getElementById('date-calendar');
+        var firstOfMonth = new Date(calYear, calMonth, 1);
+        var lastOfMonth  = new Date(calYear, calMonth + 1, 0);
+        var MONTH_NAMES  = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        var label        = MONTH_NAMES[calMonth] + ' ' + calYear;
+
+        // Day of week of the 1st (Mon=0 … Sun=6)
+        var startDow = (firstOfMonth.getDay() + 6) % 7;
+
+        var html = '<div class="cal-nav-row">' +
+            '<button class="cal-nav-btn" id="cal-prev"><span class="ms">chevron_left</span></button>' +
+            '<span class="cal-month-label">' + label + '</span>' +
+            '<button class="cal-nav-btn" id="cal-next"><span class="ms">chevron_right</span></button>' +
+        '</div><div class="cal-grid">';
+
+        ['Mo','Tu','We','Th','Fr','Sa','Su'].forEach(function(d) {
+            html += '<div class="cal-dow">' + d + '</div>';
+        });
+        for (var i = 0; i < startDow; i++) {
+            html += '<div class="cal-cell cal-empty"></div>';
+        }
+        for (var d = 1; d <= lastOfMonth.getDate(); d++) {
+            var date = calYear + '-' +
+                String(calMonth + 1).padStart(2,'0') + '-' +
+                String(d).padStart(2,'0');
+            var isAvail = !!availSet[date];
+            var isSel   = (date === selectedDate);
+            if (isAvail) {
+                html += '<div class="cal-cell cal-avail' + (isSel ? ' cal-selected' : '') + '" data-date="' + date + '">' + d + '</div>';
+            } else {
+                html += '<div class="cal-cell cal-unavail">' + d + '</div>';
+            }
+        }
+        html += '</div>';
+
+        wrap.innerHTML = html;
+
+        wrap.querySelectorAll('.cal-avail').forEach(function(cell) {
+            cell.addEventListener('click', function() {
+                wrap.querySelectorAll('.cal-avail').forEach(function(c) { c.classList.remove('cal-selected'); });
+                cell.classList.add('cal-selected');
+                selectedDate = cell.dataset.date;
+            });
+        });
+
+        document.getElementById('cal-prev').addEventListener('click', function() {
+            calMonth--;
+            if (calMonth < 0) { calMonth = 11; calYear--; }
+            drawMonth(availSet);
+        });
+        document.getElementById('cal-next').addEventListener('click', function() {
+            calMonth++;
+            if (calMonth > 11) { calMonth = 0; calYear++; }
+            drawMonth(availSet);
+        });
+    }
+
+    /* ── quantity ─────────────────────────────────── */
+    document.getElementById('qty-minus').addEventListener('click', function() {
+        if (quantity > 1) { quantity--; updateQty(); }
+    });
+    document.getElementById('qty-plus').addEventListener('click', function() {
+        if (quantity < 100) { quantity++; updateQty(); }
+    });
+    function updateQty() {
+        document.getElementById('qty-display').textContent = quantity;
+        document.getElementById('qty-total').textContent   = '$' + (PRICE * quantity).toFixed(2);
+    }
+
+    /* ── step 1 → 2 ───────────────────────────────── */
+    document.getElementById('btn-to-payment').addEventListener('click', function() {
+        if (!selectedDate) { toast.error('pick a date', 'Please select a delivery date'); return; }
+        var total = (PRICE * quantity).toFixed(2);
+        document.getElementById('payment-total').textContent  = '$' + total;
+        document.getElementById('payment-detail').innerHTML   = quantity + ' cookie' + (quantity > 1 ? 's' : '') + ' &times; $' + PRICE.toFixed(2);
+        showStep('payment-method');
+    });
+    document.getElementById('btn-back-to-details').addEventListener('click', function() { showStep('details'); });
+
+    /* ── step 2 → 3 ───────────────────────────────── */
+    document.getElementById('btn-paypal-start').addEventListener('click', function() {
+        showStep('paypal-email');
+        setTimeout(function() { document.getElementById('pp-email-input').focus(); }, 50);
+    });
+    document.getElementById('btn-back-to-method').addEventListener('click', function() { showStep('payment-method'); });
+
+    /* ── step 3 → 4 (fake login) ──────────────────── */
+    document.getElementById('pp-next-btn').addEventListener('click', function() {
+        var email = document.getElementById('pp-email-input').value.trim();
+        if (!email || !email.includes('@')) {
+            document.getElementById('pp-email-input').style.borderColor = '#dc2626';
+            document.getElementById('pp-email-input').focus();
+            return;
+        }
+        document.getElementById('pp-email-input').style.borderColor = '';
+        ppEmail = email;
+        showStep('paypal-loading');
+        document.getElementById('pp-loading-msg').textContent = 'Signing you in...';
+
+        setTimeout(function() {
+            document.getElementById('pp-loading-msg').textContent = 'Verifying your account...';
+            setTimeout(function() {
+                // show approval screen
+                var name = email.split('@')[0];
+                name = name.charAt(0).toUpperCase() + name.slice(1);
+                document.getElementById('pp-avatar-letter').textContent  = name.charAt(0).toUpperCase();
+                document.getElementById('pp-display-name').textContent   = name;
+                document.getElementById('pp-display-email').textContent  = email;
+                document.getElementById('pp-approve-amount').textContent = '$' + (PRICE * quantity).toFixed(2) + ' CAD';
+                document.getElementById('pp-approve-summary').textContent =
+                    quantity + ' cookie' + (quantity > 1 ? 's' : '') + ' \u00b7 delivering ' + selectedDate;
+                showStep('paypal-approve');
+            }, 1200);
+        }, 900);
+    });
+    document.getElementById('btn-back-to-email').addEventListener('click', function() { showStep('paypal-email'); });
+
+    /* ── step 5 → place order ─────────────────────── */
+    document.getElementById('pp-approve-btn').addEventListener('click', async function() {
+        showStep('placing');
+        try {
+            var amount = parseFloat((PRICE * quantity).toFixed(2));
+            var created  = await apiFetch('/api/payment/create-order',  { method: 'POST', body: { amount: amount } });
+            var captured = await apiFetch('/api/payment/capture-order', { method: 'POST', body: { orderID: created.orderID } });
+            var msg = document.getElementById('cookie-msg').value.trim();
+            var order = await apiFetch('/api/orders', {
+                method: 'POST',
+                body: {
+                    deliveryDate:    selectedDate,
+                    quantity:        quantity,
+                    message:         msg || null,
+                    paymentIntentId: captured.orderID
+                }
+            });
+            document.getElementById('confirm-detail').innerHTML =
+                quantity + ' cookie' + (quantity > 1 ? 's' : '') +
+                ' arriving on <strong>' + order.deliveryDate + '</strong><br>' +
+                'confirmation <strong>#' + order.id + '</strong><br>' +
+                '<span style="color:var(--text-muted);font-size:.8rem;">payment confirmed via PayPal (' + esc(ppEmail) + ')</span>';
+            showStep('confirm');
+            loadMyOrders();
+        } catch(e) {
+            toast.error('order failed', e.message);
+            showStep('paypal-approve');
+        }
+    });
+
+    document.getElementById('btn-done').addEventListener('click', closeOrderModal);
 </script>
 </body>
 </html>
